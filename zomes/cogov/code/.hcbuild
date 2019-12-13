@@ -1,0 +1,41 @@
+{
+  "steps": [
+    {
+      "command": "cargo",
+      "arguments": [
+        "build",
+        "--release",
+        "--target=wasm32-unknown-unknown"
+      ]
+    },
+    {
+      "command": "wasm-gc",
+      "arguments": ["target/wasm32-unknown-unknown/release/cogov.wasm"]
+    },
+    {
+      "command": "wasm-opt",
+      "arguments": [
+        "-Oz",
+        "--vacuum",
+        "target/wasm32-unknown-unknown/release/cogov.wasm"
+      ]
+    },
+    {
+      "command": "wasm2wat",
+      "arguments": [
+        "target/wasm32-unknown-unknown/release/cogov.wasm",
+        "-o",
+        "target/wasm32-unknown-unknown/release/cogov.wat"
+      ]
+    },
+    {
+      "command": "wat2wasm",
+      "arguments": [
+        "target/wasm32-unknown-unknown/release/cogov.wat",
+        "-o",
+        "target/wasm32-unknown-unknown/release/cogov.wasm"
+      ]
+    }
+  ],
+  "artifact": "target/wasm32-unknown-unknown/release/cogov.wasm"
+}
