@@ -28,6 +28,8 @@ mod cogov {
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
 
 	use std::time::SystemTime;
+	use holochain_wasm_utils::holochain_persistence_api::hash::HashString;
+	use std::borrow::Borrow;
 
 	#[init]
 	fn init() -> Result<(), ()> {
@@ -119,14 +121,9 @@ mod cogov {
 
 	#[zome_fn("hc_public")]
 	fn commit_collective(collective: Collective) -> ZomeApiResult<Address> {
-		let ledger_name = format!("Primary Ledger for {}", collective.name).to_string();
-		let collective_entry = Entry::App("collective".into(), collective.into());
+		let collective_entry = Entry::App("collective".into(), collective.borrow().into());
 		let collective_address = hdk::commit_entry(&collective_entry)?;
-		let ledger = Ledger {
-			name: ledger_name,
-			..Default::default()
-		};
-		commit_ledger(ledger)?;
+		create_collective_ledger(&collective, &collective_address)?;
 		Ok(collective_address)
 	}
 
@@ -145,9 +142,24 @@ mod cogov {
     )
 	}
 
+	fn create_collective_ledger(collective: &Collective, collective_address: &Address) -> ZomeApiResult<Address> {
+		let ledger_name = format!("Primary Ledger for {}", collective.name).to_string();
+		let ledger = Ledger {
+			name: ledger_name,
+			..Default::default()
+		};
+		let ledger_address = commit_ledger(ledger)?;
+		hdk::link_entries(
+			&collective_address,
+			&ledger_address,
+			"collective_leger",
+			"ledger_primary",
+		)
+	}
+
 	fn commit_ledger(ledger: Ledger) -> ZomeApiResult<Address> {
-		let collective_entry = Entry::App("collective".into(), ledger.into());
-		let collective_address = hdk::commit_entry(&collective_entry)?;
-		Ok(collective_address)
+		let ledger_entry = Entry::App("ledger".into(), ledger.into());
+		let ledger_address = hdk::commit_entry(&ledger_entry)?;
+		Ok(ledger_address)
 	}
 }
