@@ -50,15 +50,15 @@ mod cogov {
 	#[entry_def]
 	fn collective_def() -> ValidatingEntryType {
 		entry!(
-        name: "collective",
-        description: "A cogov collective",
-        sharing: Sharing::Public,
-        validation_package: || {
-            hdk::ValidationPackageDefinition::Entry
-        },
-        validation: | _validation_data: hdk::EntryValidationData<Collective>| {
-            Ok(())
-        }
+			name: "collective",
+			description: "A cogov collective",
+			sharing: Sharing::Public,
+			validation_package: || {
+				hdk::ValidationPackageDefinition::Entry
+			},
+			validation: | _validation_data: hdk::EntryValidationData<Collective>| {
+				Ok(())
+			}
     )
 	}
 
@@ -71,15 +71,15 @@ mod cogov {
 	#[entry_def]
 	fn ledger_def() -> ValidatingEntryType {
 		entry!(
-        name: "ledger",
-        description: "A cogov collective ledger",
-        sharing: Sharing::Public,
-        validation_package: || {
-            hdk::ValidationPackageDefinition::Entry
-        },
-        validation: | _validation_data: hdk::EntryValidationData<Ledger>| {
-            Ok(())
-        }
+			name: "ledger",
+			description: "A cogov collective ledger",
+			sharing: Sharing::Public,
+			validation_package: || {
+				hdk::ValidationPackageDefinition::Entry
+			},
+			validation: | _validation_data: hdk::EntryValidationData<Ledger>| {
+				Ok(())
+			}
     )
 	}
 
