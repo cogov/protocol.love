@@ -31,21 +31,6 @@ mod cogov {
 	use crate::leger::Ledger;
 	use crate::proposal::{Proposal, commit_proposal as commit_proposal__impl};
 
-	#[init]
-	fn init() -> Result<(), ()> {
-		Ok(())
-	}
-
-	#[validate_agent]
-	pub fn validate_agent(validation_data: hdk::EntryValidationData<AgentId>) -> Result<(), ()> {
-		Ok(())
-	}
-
-	#[zome_fn("hc_public")]
-	fn get_entry(address: Address) -> ZomeApiResult<Option<Entry>> {
-		hdk::get_entry(&address)
-	}
-
 	// collective
 	#[entry_def]
 	fn collective_def() -> ValidatingEntryType {
@@ -60,11 +45,6 @@ mod cogov {
 				Ok(())
 			}
     )
-	}
-
-	#[zome_fn("hc_public")]
-	fn commit_collective(collective: Collective) -> ZomeApiResult<Address> {
-		commit_collective__impl(collective)
 	}
 
 	// ledger
@@ -96,6 +76,26 @@ mod cogov {
 				Ok(())
 			}
 		)
+	}
+
+	#[init]
+	fn init() -> Result<(), ()> {
+		Ok(())
+	}
+
+	#[validate_agent]
+	pub fn validate_agent(validation_data: hdk::EntryValidationData<AgentId>) -> Result<(), ()> {
+		Ok(())
+	}
+
+	#[zome_fn("hc_public")]
+	pub fn get_entry(address: Address) -> ZomeApiResult<Option<Entry>> {
+		hdk::get_entry(&address)
+	}
+
+	#[zome_fn("hc_public")]
+	pub fn commit_collective(collective: Collective) -> ZomeApiResult<Address> {
+		commit_collective__impl(collective)
 	}
 
 	#[zome_fn("hc_public")]
