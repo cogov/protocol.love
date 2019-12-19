@@ -10,6 +10,10 @@ extern crate serde_json;
 #[macro_use]
 extern crate holochain_json_derive;
 
+mod collective;
+mod leger;
+mod proposal;
+
 use hdk_proc_macros::zome;
 
 #[zome]
@@ -18,17 +22,16 @@ mod cogov {
 		entry::Entry,
 		dna::entry_types::Sharing,
 	};
-	use hdk::holochain_json_api::{
-		json::JsonString,
-		error::JsonError,
-	};
 	use hdk::holochain_persistence_api::{
 		cas::content::Address
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
 
 	use std::borrow::Borrow;
-	use time::{Timespec, Tm};
+
+	use crate::collective::Collective;
+	use crate::leger::Ledger;
+	use crate::proposal::Proposal;
 
 	#[init]
 	fn init() -> Result<(), ()> {
@@ -39,81 +42,6 @@ mod cogov {
 	pub fn validate_agent(validation_data: hdk::EntryValidationData<AgentId>) -> Result<(), ()> {
 		Ok(())
 	}
-
-	#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-	pub struct Collective {
-		pub name: String,
-		pub created_at_sec: i64,
-	}
-
-	impl Collective {
-		#[allow(dead_code)]
-		fn created_at(&self) -> Tm {
-			time::at(Timespec::new(self.created_at_sec, 0))
-		}
-	}
-
-	impl Default for Collective {
-		fn default() -> Self {
-			Collective {
-				name: "unnamed collective".to_string(),
-				created_at_sec: time::now_utc().to_timespec().sec,
-			}
-		}
-	}
-
-	#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-	pub struct Ledger {
-		name: String,
-		created_at_sec: i64,
-	}
-
-	impl Ledger {
-		#[allow(dead_code)]
-		fn created_at(&self) -> Tm {
-			time::at(Timespec::new(self.created_at_sec, 0))
-		}
-	}
-
-	impl Default for Ledger {
-		fn default() -> Self {
-			Ledger {
-				name: "unnamed ledger".to_string(),
-				created_at_sec: time::now_utc().to_timespec().sec,
-			}
-		}
-	}
-
-	#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-	pub struct Proposal {
-		pub name: String,
-		pub content: String,
-		pub created_at_sec: i64,
-	}
-
-	impl Proposal {
-		#[allow(dead_code)]
-		fn created_at(&self) -> Tm {
-			time::at(Timespec::new(self.created_at_sec, 0))
-		}
-	}
-
-	impl Default for Proposal {
-		fn default() -> Self {
-			Proposal {
-				name: "unnamed proposal".to_string(),
-				content: "".to_string(),
-				created_at_sec: time::now_utc().to_timespec().sec,
-			}
-		}
-	}
-
-//	#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-//	pub struct ProposalCreate {
-//		name: String,
-//		content: String,
-//		created?: SystemTime,
-//	}
 
 	#[zome_fn("hc_public")]
 	fn get_entry(address: Address) -> ZomeApiResult<Option<Entry>> {
