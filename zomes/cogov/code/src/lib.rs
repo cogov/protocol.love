@@ -27,9 +27,8 @@ mod cogov {
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
 
-	use std::time::SystemTime;
-	use holochain_wasm_utils::holochain_persistence_api::hash::HashString;
 	use std::borrow::Borrow;
+	use time::{Timespec, Tm};
 
 	#[init]
 	fn init() -> Result<(), ()> {
@@ -37,41 +36,28 @@ mod cogov {
 	}
 
 	#[validate_agent]
-	pub fn validate_agent(validation_data: EntryValidationData<AgentId>) -> Result<(), ()> {
+	pub fn validate_agent(validation_data: hdk::EntryValidationData<AgentId>) -> Result<(), ()> {
 		Ok(())
-	}
-
-	#[entry_def]
-	fn my_entry_def() -> ValidatingEntryType {
-		entry!(
-        name: "my_entry",
-        description: "this is a same entry definition",
-        sharing: Sharing::Public,
-        validation_package: || {
-            hdk::ValidationPackageDefinition::Entry
-        },
-        validation: | _validation_data: hdk::EntryValidationData<MyEntry>| {
-            Ok(())
-        }
-    )
-	}
-
-	#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-	pub struct MyEntry {
-		content: String,
 	}
 
 	#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 	pub struct Collective {
-		name: String,
-		created: SystemTime,
+		pub name: String,
+		pub created_at_sec: i64,
+	}
+
+	impl Collective {
+		#[allow(dead_code)]
+		fn created_at(&self) -> Tm {
+			time::at(Timespec::new(self.created_at_sec, 0))
+		}
 	}
 
 	impl Default for Collective {
 		fn default() -> Self {
 			Collective {
 				name: "unnamed collective".to_string(),
-				created: SystemTime::now(),
+				created_at_sec: time::now_utc().to_timespec().sec,
 			}
 		}
 	}
@@ -79,31 +65,62 @@ mod cogov {
 	#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 	pub struct Ledger {
 		name: String,
-		created: SystemTime,
+		created_at_sec: i64,
+	}
+
+	impl Ledger {
+		#[allow(dead_code)]
+		fn created_at(&self) -> Tm {
+			time::at(Timespec::new(self.created_at_sec, 0))
+		}
 	}
 
 	impl Default for Ledger {
 		fn default() -> Self {
 			Ledger {
 				name: "unnamed ledger".to_string(),
-				created: SystemTime::now(),
+				created_at_sec: time::now_utc().to_timespec().sec,
 			}
 		}
 	}
 
-	#[zome_fn("hc_public")]
-	fn create_my_entry(entry: MyEntry) -> ZomeApiResult<Address> {
-		let entry = Entry::App("my_entry".into(), entry.into());
-		let address = hdk::commit_entry(&entry)?;
-		Ok(address)
+	#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+	pub struct Proposal {
+		pub name: String,
+		pub content: String,
+		pub created_at_sec: i64,
 	}
+
+	impl Proposal {
+		#[allow(dead_code)]
+		fn created_at(&self) -> Tm {
+			time::at(Timespec::new(self.created_at_sec, 0))
+		}
+	}
+
+	impl Default for Proposal {
+		fn default() -> Self {
+			Proposal {
+				name: "unnamed proposal".to_string(),
+				content: "".to_string(),
+				created_at_sec: time::now_utc().to_timespec().sec,
+			}
+		}
+	}
+
+//	#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+//	pub struct ProposalCreate {
+//		name: String,
+//		content: String,
+//		created?: SystemTime,
+//	}
 
 	#[zome_fn("hc_public")]
 	fn get_entry(address: Address) -> ZomeApiResult<Option<Entry>> {
 		hdk::get_entry(&address)
 	}
 
-
+	// collective
 	#[entry_def]
 	fn collective_def() -> ValidatingEntryType {
 		entry!(
@@ -113,7 +130,7 @@ mod cogov {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: | _validation_data: hdk::EntryValidationData<MyEntry>| {
+        validation: | _validation_data: hdk::EntryValidationData<Collective>| {
             Ok(())
         }
     )
@@ -127,6 +144,7 @@ mod cogov {
 		Ok(collective_address)
 	}
 
+	// ledger
 	#[entry_def]
 	fn ledger_def() -> ValidatingEntryType {
 		entry!(
@@ -136,7 +154,7 @@ mod cogov {
         validation_package: || {
             hdk::ValidationPackageDefinition::Entry
         },
-        validation: | _validation_data: hdk::EntryValidationData<MyEntry>| {
+        validation: | _validation_data: hdk::EntryValidationData<Ledger>| {
             Ok(())
         }
     )
@@ -161,5 +179,27 @@ mod cogov {
 		let ledger_entry = Entry::App("ledger".into(), ledger.into());
 		let ledger_address = hdk::commit_entry(&ledger_entry)?;
 		Ok(ledger_address)
+	}
+
+	#[entry_def]
+	fn proposal_def() -> ValidatingEntryType {
+		entry!(
+			name: "proposal",
+			description: "A pro",
+			sharing: Sharing::Public,
+			validation_package: || {
+				hdk::ValidationPackageDefinition::Entry
+			},
+			validation: | _validation_data: hdk::EntryValidationData<Proposal>| {
+				Ok(())
+			}
+		)
+	}
+
+	#[zome_fn("hc_public")]
+	fn commit_proposal(proposal: Proposal) -> ZomeApiResult<Address> {
+		let proposal_entry = Entry::App("proposal".into(), proposal.into());
+		let proposal_address = hdk::commit_entry(&proposal_entry)?;
+		Ok(proposal_address)
 	}
 }
