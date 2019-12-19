@@ -37,18 +37,7 @@ impl Default for Collective {
 	}
 }
 
-pub fn commit_collective(collective_params: CollectiveParams) -> ZomeApiResult<Address> {
-	let collective = if collective_params.created_at.is_some() {
-		Collective {
-			name: collective_params.name,
-			created_at_sec: collective_params.created_at.unwrap(),
-		}
-	} else {
-		Collective {
-			name: collective_params.name,
-			..Default::default()
-		}
-	};
+pub fn commit_collective(collective: Collective) -> ZomeApiResult<Address> {
 	let collective_entry = Entry::App("collective".into(), collective.borrow().into());
 	let collective_address = hdk::commit_entry(&collective_entry)?;
 

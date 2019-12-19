@@ -45,20 +45,7 @@ impl Default for Proposal {
 //		created?: SystemTime,
 //	}
 
-pub fn commit_proposal(proposal_params: ProposalParams) -> ZomeApiResult<Address> {
-	let proposal = if proposal_params.created_at.is_some() {
-		Proposal {
-			name: proposal_params.name,
-			content: proposal_params.content,
-			created_at_sec: proposal_params.created_at.unwrap(),
-		}
-	} else {
-		Proposal {
-			name: proposal_params.name,
-			content: proposal_params.content,
-			..Default::default()
-		}
-	};
+pub fn commit_proposal(proposal: Proposal) -> ZomeApiResult<Address> {
 	let proposal_entry = Entry::App("proposal".into(), proposal.into());
 	let proposal_address = hdk::commit_entry(&proposal_entry)?;
 	Ok(proposal_address)

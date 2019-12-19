@@ -27,9 +27,9 @@ mod cogov {
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
 
-	use crate::collective::{Collective, commit_collective as commit_collective__impl, CollectiveParams};
+	use crate::collective::{Collective, commit_collective as commit_collective__impl};
 	use crate::leger::Ledger;
-	use crate::proposal::{Proposal, commit_proposal as commit_proposal__impl, ProposalParams};
+	use crate::proposal::{Proposal, commit_proposal as commit_proposal__impl};
 
 	// collective
 	#[entry_def]
@@ -93,13 +93,21 @@ mod cogov {
 		hdk::get_entry(&address)
 	}
 
+	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "name": "Collective 0" } }}' http://127.0.0.1:8888
 	#[zome_fn("hc_public")]
-	pub fn commit_collective(collective_params: CollectiveParams) -> ZomeApiResult<Address> {
-		commit_collective__impl(collective_params)
+	pub fn commit_collective(name:String, created_at:Option<i64>) -> ZomeApiResult<Address> {
+		commit_collective__impl(Collective {
+			name,
+			created_at_sec: created_at.unwrap_or(Collective::default().created_at_sec),
+		})
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn commit_proposal(proposal_params: ProposalParams) -> ZomeApiResult<Address> {
-		commit_proposal__impl(proposal_params)
+	pub fn commit_proposal(name:String, content:String, created_at:Option<i64>) -> ZomeApiResult<Address> {
+		commit_proposal__impl(Proposal {
+			name,
+			content,
+			created_at_sec: created_at.unwrap_or(Proposal::default().created_at_sec),
+		})
 	}
 }
