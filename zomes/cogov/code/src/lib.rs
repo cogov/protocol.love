@@ -27,11 +27,9 @@ mod cogov {
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
 
-	use std::borrow::Borrow;
-
-	use crate::collective::Collective;
+	use crate::collective::{Collective, commit_collective as commit_collective__impl};
 	use crate::leger::Ledger;
-	use crate::proposal::Proposal;
+	use crate::proposal::{Proposal, commit_proposal as commit_proposal__impl};
 
 	#[init]
 	fn init() -> Result<(), ()> {
@@ -66,10 +64,7 @@ mod cogov {
 
 	#[zome_fn("hc_public")]
 	fn commit_collective(collective: Collective) -> ZomeApiResult<Address> {
-		let collective_entry = Entry::App("collective".into(), collective.borrow().into());
-		let collective_address = hdk::commit_entry(&collective_entry)?;
-		create_collective_ledger(&collective, &collective_address)?;
-		Ok(collective_address)
+		commit_collective__impl(collective)
 	}
 
 	// ledger
@@ -88,27 +83,6 @@ mod cogov {
     )
 	}
 
-	fn create_collective_ledger(collective: &Collective, collective_address: &Address) -> ZomeApiResult<Address> {
-		let ledger_name = format!("Primary Ledger for {}", collective.name).to_string();
-		let ledger = Ledger {
-			name: ledger_name,
-			..Default::default()
-		};
-		let ledger_address = commit_ledger(ledger)?;
-		hdk::link_entries(
-			&collective_address,
-			&ledger_address,
-			"collective_leger",
-			"ledger_primary",
-		)
-	}
-
-	fn commit_ledger(ledger: Ledger) -> ZomeApiResult<Address> {
-		let ledger_entry = Entry::App("ledger".into(), ledger.into());
-		let ledger_address = hdk::commit_entry(&ledger_entry)?;
-		Ok(ledger_address)
-	}
-
 	#[entry_def]
 	fn proposal_def() -> ValidatingEntryType {
 		entry!(
@@ -125,9 +99,7 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
-	fn commit_proposal(proposal: Proposal) -> ZomeApiResult<Address> {
-		let proposal_entry = Entry::App("proposal".into(), proposal.into());
-		let proposal_address = hdk::commit_entry(&proposal_entry)?;
-		Ok(proposal_address)
+	pub fn commit_proposal(proposal: Proposal) -> ZomeApiResult<Address> {
+		commit_proposal__impl(proposal)
 	}
 }

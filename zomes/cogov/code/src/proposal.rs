@@ -3,6 +3,9 @@ use hdk::holochain_json_api::{
 	json::JsonString,
 	error::JsonError,
 };
+use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
+use hdk::prelude::ZomeApiResult;
+use holochain_wasm_utils::holochain_core_types::entry::Entry;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Proposal {
@@ -34,3 +37,9 @@ impl Default for Proposal {
 //		content: String,
 //		created?: SystemTime,
 //	}
+
+pub fn commit_proposal(proposal: Proposal) -> ZomeApiResult<Address> {
+	let proposal_entry = Entry::App("proposal".into(), proposal.into());
+	let proposal_address = hdk::commit_entry(&proposal_entry)?;
+	Ok(proposal_address)
+}
