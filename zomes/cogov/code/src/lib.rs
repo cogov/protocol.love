@@ -27,9 +27,9 @@ mod cogov {
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
 
-	use crate::collective::{Collective, commit_collective as commit_collective__impl};
+	use crate::collective::{Collective, commit_collective as commit_collective__impl, CollectiveParams};
 	use crate::leger::Ledger;
-	use crate::proposal::{Proposal, commit_proposal as commit_proposal__impl};
+	use crate::proposal::{Proposal, commit_proposal as commit_proposal__impl, ProposalParams};
 
 	// collective
 	#[entry_def]
@@ -94,12 +94,12 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn commit_collective(collective: Collective) -> ZomeApiResult<Address> {
-		commit_collective__impl(collective)
+	pub fn commit_collective(collective_params: CollectiveParams) -> ZomeApiResult<Address> {
+		commit_collective__impl(collective_params)
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn commit_proposal(proposal: Proposal) -> ZomeApiResult<Address> {
-		commit_proposal__impl(proposal)
+	pub fn commit_proposal(proposal_params: ProposalParams) -> ZomeApiResult<Address> {
+		commit_proposal__impl(proposal_params)
 	}
 }

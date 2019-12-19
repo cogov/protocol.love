@@ -10,6 +10,12 @@ use hdk::prelude::ZomeApiResult;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub struct CollectiveParams {
+	pub name: String,
+	pub created_at: Option<i64>,
+}
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Collective {
 	pub name: String,
 	pub created_at_sec: i64,
@@ -31,9 +37,21 @@ impl Default for Collective {
 	}
 }
 
-pub fn commit_collective(collective: Collective) -> ZomeApiResult<Address> {
+pub fn commit_collective(collective_params: CollectiveParams) -> ZomeApiResult<Address> {
+	let collective = if collective_params.created_at.is_some() {
+		Collective {
+			name: collective_params.name,
+			created_at_sec: collective_params.created_at.unwrap(),
+		}
+	} else {
+		Collective {
+			name: collective_params.name,
+			..Default::default()
+		}
+	};
 	let collective_entry = Entry::App("collective".into(), collective.borrow().into());
 	let collective_address = hdk::commit_entry(&collective_entry)?;
+
 	create_collective_ledger(&collective, &collective_address)?;
 	Ok(collective_address)
 }
