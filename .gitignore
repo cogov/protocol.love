@@ -7,3 +7,4 @@ conductor-config.toml
 .idea
 .env
 .cargo
+tmp

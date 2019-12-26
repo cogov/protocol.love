@@ -9,10 +9,12 @@ extern crate serde_derive;
 extern crate serde_json;
 #[macro_use]
 extern crate holochain_json_derive;
+//#[macro_use]
+//extern crate log;
 
-mod collective;
-mod leger;
-mod proposal;
+pub mod collective;
+pub mod leger;
+pub mod proposal;
 
 use hdk_proc_macros::zome;
 
@@ -27,7 +29,11 @@ mod cogov {
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
 
-	use crate::collective::{Collective, commit_collective as commit_collective__impl};
+	use crate::collective::{
+		Collective,
+		commit_collective as commit_collective__impl,
+		CollectiveParams,
+	};
 	use crate::leger::Ledger;
 	use crate::proposal::{Proposal, commit_proposal as commit_proposal__impl};
 
@@ -93,21 +99,29 @@ mod cogov {
 		hdk::get_entry(&address)
 	}
 
-	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "name": "Collective 0" } }}' http://127.0.0.1:8888
 	#[zome_fn("hc_public")]
-	pub fn commit_collective(name:String, created_at:Option<i64>) -> ZomeApiResult<Address> {
-		commit_collective__impl(Collective {
-			name,
-			created_at_sec: created_at.unwrap_or(Collective::default().created_at_sec),
-		})
+	pub fn test(collective: CollectiveParams) -> ZomeApiResult<Collective> {
+		let collective2 = Collective {
+			name: collective.name,
+		};
+		Ok(collective2)
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn commit_proposal(name:String, content:String, created_at:Option<i64>) -> ZomeApiResult<Address> {
+	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
+	pub fn commit_collective(collective: CollectiveParams) -> ZomeApiResult<Address> {
+		let (_collective_entry, collective_address) = commit_collective__impl(
+			Collective {
+				name: collective.name,
+			})?;
+		Ok(collective_address)
+	}
+
+	#[zome_fn("hc_public")]
+	pub fn commit_proposal(name: String, content: String) -> ZomeApiResult<Address> {
 		commit_proposal__impl(Proposal {
 			name,
 			content,
-			created_at_sec: created_at.unwrap_or(Proposal::default().created_at_sec),
 		})
 	}
 }
