@@ -35,7 +35,7 @@ mod cogov {
 		CollectiveParams,
 	};
 	use crate::leger::Ledger;
-	use crate::proposal::{Proposal, commit_proposal as commit_proposal__impl};
+	use crate::proposal::{Proposal, commit_proposal as commit_proposal__impl, ProposalParams};
 
 	// collective
 	#[entry_def]
@@ -110,7 +110,7 @@ mod cogov {
 	#[zome_fn("hc_public")]
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
 	pub fn commit_collective(collective: CollectiveParams) -> ZomeApiResult<Address> {
-		let (_collective_entry, collective_address) = commit_collective__impl(
+		let (collective_address, _) = commit_collective__impl(
 			Collective {
 				name: collective.name,
 			})?;
@@ -118,10 +118,11 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn commit_proposal(name: String, content: String) -> ZomeApiResult<Address> {
-		commit_proposal__impl(Proposal {
-			name,
-			content,
-		})
+	pub fn commit_proposal(proposal: ProposalParams) -> ZomeApiResult<Address> {
+		let (proposal_address, _) = commit_proposal__impl(Proposal {
+			name: proposal.name,
+			content: proposal.content,
+		})?;
+		Ok(proposal_address)
 	}
 }
