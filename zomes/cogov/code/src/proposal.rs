@@ -5,6 +5,7 @@ use hdk::holochain_json_api::{
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
 use hdk::prelude::ZomeApiError;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
+use std::borrow::Borrow;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct ProposalParams {
@@ -27,8 +28,14 @@ impl Default for Proposal {
 	}
 }
 
-pub fn commit_proposal(proposal: Proposal) -> Result<(Address, Entry), ZomeApiError> {
-	let proposal_entry = Entry::App("proposal".into(), proposal.into());
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub struct ProposalPayload {
+	pub proposal_address: Address,
+	pub proposal: Proposal,
+}
+
+pub fn commit_proposal(proposal: Proposal) -> Result<(Address, Entry, Proposal), ZomeApiError> {
+	let proposal_entry = Entry::App("proposal".into(), proposal.borrow().into());
 	let proposal_address = hdk::commit_entry(&proposal_entry)?;
-	Ok((proposal_address, proposal_entry))
+	Ok((proposal_address, proposal_entry, proposal))
 }

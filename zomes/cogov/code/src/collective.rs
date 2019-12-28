@@ -26,9 +26,15 @@ impl Default for Collective {
 	}
 }
 
-pub fn commit_collective(collective: Collective) -> Result<(Address, Entry), ZomeApiError> {
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub struct CollectivePayload {
+	pub collective_address: Address,
+	pub collective: Collective,
+}
+
+pub fn commit_collective(collective: Collective) -> Result<(Address, Entry, Collective), ZomeApiError> {
 	let collective_entry = Entry::App("collective".into(), collective.borrow().into());
 	let collective_address = hdk::commit_entry(&collective_entry)?;
-	create_collective_ledger(&collective, &collective_address)?;
-	Ok((collective_address, collective_entry))
+	create_collective_ledger(&collective.borrow(), &collective_address)?;
+	Ok((collective_address, collective_entry, collective))
 }
