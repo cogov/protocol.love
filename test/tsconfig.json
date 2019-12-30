@@ -1,0 +1,24 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"target": "esnext",
+		"composite": true,
+		"declaration": true,
+
+		"noEmitOnError": true,
+		"noErrorTruncation": true,
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+		"noImplicitAny": false,
+		"resolveJsonModule": true,
+		"allowSyntheticDefaultImports": true,
+		"noImplicitThis": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"typeRoots": [
+			"node_modules/@types"
+		]
+	},
+	"exclude": []
+}

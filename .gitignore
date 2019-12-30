@@ -4,7 +4,9 @@ target/
 .hc
 conductor-config.toml
 
+*.tsbuildinfo
 .idea
 .env
 .cargo
 tmp
+yarn.lock
