@@ -1,9 +1,10 @@
-import {Orchestrator, Config} from '@holochain/try-o-rama'
-import {join, dirname} from 'path'
+import {Orchestrator, Config} from '@holochain/tryorama'
+import {join} from 'path'
 import {readdirSync} from 'fs'
 // Point to your DNA file and give it a nickname.
 // The DNA file can either be on your filesystem...
 main()
+
 async function main() {
 	const cogov_dna_path = join(__dirname, `../dist/${readdirSync(`${__dirname}/../dist/`)}`)
 	const cogov_dna = Config.dna(
@@ -37,9 +38,6 @@ async function main() {
 	const orchestrator = new Orchestrator()
 	// Register a scenario, which is a function that gets a special API injected in
 	orchestrator.registerScenario('commit_collective; get_collective', async (s, t) => {
-		console.debug('test|debug|1', {
-		})
-		console.debug(readdirSync(dirname(cogov_dna_path)))
 		// Declare two players using the previously specified config,
 		// and nickname them "alice" and "bob"
 		const {alice} = await s.players({alice: main_config,})
@@ -53,9 +51,15 @@ async function main() {
 		// // ...and re-spawn the same conductor you just killed
 		// await alice.spawn({})
 		// // now you can make zome calls,
-		await alice.call('cogov', 'cogov', 'commit_collective', {
-			name: `Collective 1`
+		const commit_collective_response = await alice.call('cogov', 'cogov', 'commit_collective', {
+			collective: {
+				name: `Collective 1`
+			}
 		})
+		const {
+			collective_address,
+			collective,
+		} = commit_collective_response
 		// you can wait for total consistency of network activity,
 		await s.consistency()
 		// and you can make assertions using tape by default
@@ -63,9 +67,15 @@ async function main() {
 			'cogov',
 			'cogov',
 			'get_collective', {
-				"collective": {"name": "Collective 0"},
+				collective_address,
 			})
 		t.equal(messages.length, 1)
+		t.equal(messages, [
+			{
+				collective_address,
+				collective,
+			}
+		])
 	})
 	// Run all registered scenarios as a final step, and gather the report,
 	// if you set up a reporter

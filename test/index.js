@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const try_o_rama_1 = require("@holochain/try-o-rama");
+const tryorama_1 = require("@holochain/tryorama");
 const path_1 = require("path");
 const fs_1 = require("fs");
 // Point to your DNA file and give it a nickname.
@@ -8,12 +8,12 @@ const fs_1 = require("fs");
 main();
 async function main() {
     const cogov_dna_path = path_1.join(__dirname, `../dist/${fs_1.readdirSync(`${__dirname}/../dist/`)}`);
-    const cogov_dna = try_o_rama_1.Config.dna(cogov_dna_path, 'cogov');
+    const cogov_dna = tryorama_1.Config.dna(cogov_dna_path, 'cogov');
     // ... or on the web
     //const dnaChat = Config.dna('https://url.to/your/chat.dna.json', 'chat')
     // Set up a Conductor configuration using the handy `Conductor.config` helper.
     // Read the docs for more on configuration.
-    const main_config = try_o_rama_1.Config.gen({
+    const main_config = tryorama_1.Config.gen({
         cogov: cogov_dna,
     }, {
         // specify a bridge from chat to blog
@@ -29,7 +29,7 @@ async function main() {
     // * custom conductor spawning
     // * custom test result reporting
     // * scenario middleware, including integration with other test harnesses
-    const orchestrator = new try_o_rama_1.Orchestrator();
+    const orchestrator = new tryorama_1.Orchestrator();
     // Register a scenario, which is a function that gets a special API injected in
     orchestrator.registerScenario('commit_collective; get_collective', async (s, t) => {
         // Declare two players using the previously specified config,
@@ -45,16 +45,25 @@ async function main() {
         // // ...and re-spawn the same conductor you just killed
         // await alice.spawn({})
         // // now you can make zome calls,
-        await alice.call('cogov', 'cogov', 'commit_collective', {
-            name: `Collective 1`
+        const commit_collective_response = await alice.call('cogov', 'cogov', 'commit_collective', {
+            collective: {
+                name: `Collective 1`
+            }
         });
+        const { collective_address, collective, } = commit_collective_response;
         // you can wait for total consistency of network activity,
         await s.consistency();
         // and you can make assertions using tape by default
         const messages = await carol.call('cogov', 'cogov', 'get_collective', {
-            "collective": { "name": "Collective 0" },
+            collective_address,
         });
         t.equal(messages.length, 1);
+        t.equal(messages, [
+            {
+                collective_address,
+                collective,
+            }
+        ]);
     });
     // Run all registered scenarios as a final step, and gather the report,
     // if you set up a reporter

@@ -29,7 +29,12 @@ mod cogov {
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
 
-	use crate::collective::{Collective, commit_collective as commit_collective__impl, CollectiveParams, CollectivePayload};
+	use crate::collective::{
+		Collective,
+		commit_collective as commit_collective__impl,
+		get_collective as get_collective__impl,
+		CollectiveParams, CollectivePayload
+	};
 	use crate::leger::Ledger;
 	use crate::proposal::{Proposal, commit_proposal as commit_proposal__impl, ProposalParams, ProposalPayload};
 
@@ -113,6 +118,17 @@ mod cogov {
 		Ok(CollectivePayload {
 			collective_address,
 			collective: collective2,
+		})
+	}
+
+	#[zome_fn("hc_public")]
+	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
+	pub fn get_collective(collective_address:Address) -> ZomeApiResult<CollectivePayload> {
+		let collective_address__ = collective_address.clone();
+		let collective = get_collective__impl(collective_address__)?;
+		Ok(CollectivePayload {
+			collective_address,
+			collective,
 		})
 	}
 
