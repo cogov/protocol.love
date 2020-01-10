@@ -35,7 +35,7 @@ mod cogov {
 		CollectiveParams, CollectivePayload,
 	};
 	use crate::leger::Ledger;
-	use crate::proposal::{Proposal, commit_proposal as commit_proposal__impl, ProposalParams, ProposalPayload};
+	use crate::proposal::{Proposal, commit_proposal, ProposalParams, ProposalPayload};
 
 	// collective
 	#[entry_def]
@@ -144,8 +144,8 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn commit_proposal(proposal: ProposalParams) -> ZomeApiResult<ProposalPayload> {
-		let (proposal_address, _proposal_entry, proposal2) = commit_proposal__impl(Proposal {
+	pub fn create_proposal(proposal: ProposalParams) -> ZomeApiResult<ProposalPayload> {
+		let (proposal_address, _proposal_entry, proposal2) = commit_proposal(Proposal {
 			name: proposal.name,
 			content: proposal.content,
 		})?;
