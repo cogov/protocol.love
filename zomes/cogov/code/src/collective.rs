@@ -5,9 +5,8 @@ use hdk::holochain_json_api::{
 };
 use crate::leger::create_collective_ledger;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
-use hdk::prelude::ZomeApiError;
+use hdk::prelude::ZomeApiResult;
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
-use hdk::error::ZomeApiResult;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CollectiveParams {
@@ -33,7 +32,7 @@ pub struct CollectivePayload {
 	pub collective: Collective,
 }
 
-pub fn commit_collective(collective: Collective) -> Result<(Address, Entry, Collective), ZomeApiError> {
+pub fn commit_collective(collective: Collective) -> ZomeApiResult<(Address, Entry, Collective)> {
 	let collective_entry = Entry::App("collective".into(), collective.borrow().into());
 	let collective_address = hdk::commit_entry(&collective_entry)?;
 	create_collective_ledger(&collective.borrow(), &collective_address)?;
@@ -45,6 +44,6 @@ pub fn get_collective_entry(collective_address: Address) -> ZomeApiResult<Option
 	Ok(collective_entry)
 }
 
-pub fn get_collective(collective_address: Address) -> Result<Collective, ZomeApiError> {
+pub fn get_collective(collective_address: Address) -> ZomeApiResult<Collective> {
 	hdk::utils::get_as_type(collective_address)
 }
