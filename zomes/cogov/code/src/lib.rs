@@ -112,14 +112,6 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn test(collective: CollectiveParams) -> ZomeApiResult<Collective> {
-		let collective2 = Collective {
-			name: collective.name,
-		};
-		Ok(collective2)
-	}
-
-	#[zome_fn("hc_public")]
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
 	pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
 		let (collective_address, _collective_entry, collective__) = commit_collective(
