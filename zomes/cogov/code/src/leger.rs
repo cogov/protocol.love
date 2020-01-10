@@ -21,19 +21,19 @@ impl Default for Ledger {
 }
 
 #[allow(dead_code)]
-pub fn create_collective_ledger(collective: &Collective, _collective_address: &Address) -> ZomeApiResult<Address> {
+pub fn create_collective_ledger(collective: &Collective, collective_address: &Address) -> ZomeApiResult<Address> {
 	let ledger_name = format!("Primary Ledger for {}", collective.name).to_string();
 	let ledger = Ledger {
 		name: ledger_name,
 		..Default::default()
 	};
 	let ledger_address = commit_ledger(ledger)?;
-//	hdk::link_entries(
-//		&collective_address,
-//		&ledger_address,
-//		"collective_leger",
-//		"ledger_primary",
-//	)?;
+	hdk::link_entries(
+		&collective_address,
+		&ledger_address,
+		"collective_ledger",
+		"ledger_primary",
+	)?;
 	Ok(ledger_address)
 }
 

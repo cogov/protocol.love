@@ -50,7 +50,19 @@ mod cogov {
 			},
 			validation: | _validation_data: hdk::EntryValidationData<Collective>| {
 				Ok(())
-			}
+			},
+			links: [
+				to!(
+					"ledger",
+					link_type: "collective_ledger",
+					validation_package: || {
+						hdk::ValidationPackageDefinition::Entry
+					},
+					validation: |_validation_data: hdk::LinkValidationData| {
+						Ok(())
+					}
+				)
+			]
     )
 	}
 
