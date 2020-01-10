@@ -43,7 +43,3 @@ pub fn get_collective_entry(collective_address: Address) -> ZomeApiResult<Option
 	let collective_entry = hdk::get_entry(&collective_address)?;
 	Ok(collective_entry)
 }
-
-pub fn get_collective(collective_address: Address) -> ZomeApiResult<Collective> {
-	hdk::utils::get_as_type(collective_address)
-}

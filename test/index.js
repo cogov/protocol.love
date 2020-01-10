@@ -29,7 +29,7 @@ async function main() {
 	// * scenario middleware, including integration with other test harnesses
 	const orchestrator = new tryorama.Orchestrator()
 	// Register a scenario, which is a function that gets a special API injected in
-	orchestrator.registerScenario('commit_collective; get_collective', async (s, t) => {
+	orchestrator.registerScenario('create_collective; get_collective', async (s, t) => {
 		// Declare two players using the previously specified config,
 		// and nickname them "alice" and "bob"
 		const { alice } = await s.players({ alice: main_config, })
@@ -44,12 +44,12 @@ async function main() {
 		// // ...and re-spawn the same conductor you just killed
 		// await alice.spawn({})
 		// // now you can make zome calls,
-		const commit_collective_response = await alice.call('cogov', 'cogov', 'commit_collective', {
+		const create_collective_response = await alice.call('cogov', 'cogov', 'create_collective', {
 			collective: {
 				name: `Collective 1`
 			}
 		})
-		const { Ok: { collective_address, collective } } = commit_collective_response
+		const { Ok: { collective_address, collective } } = create_collective_response
 		t.assert(collective_address, 'collective_address should be truthy')
 		t.assert(collective, 'collective should be truthy')
 		// you can wait for total consistency of network activity,

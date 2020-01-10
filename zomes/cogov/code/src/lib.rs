@@ -31,8 +31,7 @@ mod cogov {
 
 	use crate::collective::{
 		Collective,
-		commit_collective as commit_collective__impl,
-		get_collective as get_collective__impl,
+		commit_collective,
 		CollectiveParams, CollectivePayload,
 	};
 	use crate::leger::Ledger;
@@ -122,14 +121,14 @@ mod cogov {
 
 	#[zome_fn("hc_public")]
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
-	pub fn commit_collective(collective: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
-		let (collective_address, _collective_entry, collective2) = commit_collective__impl(
+	pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
+		let (collective_address, _collective_entry, collective__) = commit_collective(
 			Collective {
 				name: collective.name,
 			})?;
 		Ok(CollectivePayload {
 			collective_address,
-			collective: collective2,
+			collective: collective__,
 		})
 	}
 
@@ -137,7 +136,7 @@ mod cogov {
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 	pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePayload> {
 		let collective_address__ = collective_address.clone();
-		let collective = get_collective__impl(collective_address__)?;
+		let collective = hdk::utils::get_as_type(collective_address__)?;
 		Ok(CollectivePayload {
 			collective_address,
 			collective,
