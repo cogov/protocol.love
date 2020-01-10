@@ -30,17 +30,29 @@ async function main() {
 		t.assert(collective_address, 'collective_address should be truthy')
 		t.assert(collective, 'collective should be truthy')
 //		await s.consistency()
-//		const messages = await carol.call('cogov', 'cogov', 'get_collective', {
-		const messages = await alice.call('cogov', 'cogov', 'get_collective', {
+//		const get_collective_response = await carol.call('cogov', 'cogov', 'get_collective', {
+		const get_collective_response = await alice.call('cogov', 'cogov', 'get_collective', {
 			collective_address,
 		})
-		t.deepEqual(messages, {
+		t.deepEqual(get_collective_response, {
 				Ok: {
 					collective_address,
 					collective,
 				}
 			}
 		)
+//		const get_actions_response = await alice.call('cogov', 'cogov', 'get_actions', {
+//			collective_address,
+//		})
+//		t.deepEqual(get_actions_response, {
+//				Ok: [
+//					{
+//						collective_address,
+//						collective,
+//					},
+//				]
+//			}
+//		)
 	})
 	const report = await orchestrator.run()
 	console.log(report)

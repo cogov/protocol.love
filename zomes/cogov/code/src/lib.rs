@@ -12,11 +12,13 @@ extern crate holochain_json_derive;
 //#[macro_use]
 //extern crate log;
 
+pub mod action;
 pub mod collective;
 pub mod leger;
 pub mod proposal;
 
 use hdk_proc_macros::zome;
+use std::borrow::Borrow;
 
 #[zome]
 mod cogov {
@@ -28,6 +30,7 @@ mod cogov {
 		cas::content::Address
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
+	use holochain_wasm_utils::holochain_core_types::link::LinkMatch;
 
 	use crate::collective::{
 		Collective,
@@ -36,6 +39,12 @@ mod cogov {
 	};
 	use crate::leger::Ledger;
 	use crate::proposal::{Proposal, commit_proposal, ProposalParams, ProposalPayload};
+	use crate::action::{
+		Action,
+		ActionsPayload,
+		ActionStatus,
+		ActionIntent,
+	};
 
 	// collective
 	#[entry_def]
@@ -52,6 +61,16 @@ mod cogov {
 			},
 			links: [
 				to!(
+					"action",
+					link_type: "collective_action",
+					validation_package: || {
+						hdk::ValidationPackageDefinition::Entry
+					},
+					validation: |_validation_data: hdk::LinkValidationData| {
+						Ok(())
+					}
+				),
+				to!(
 					"ledger",
 					link_type: "collective_ledger",
 					validation_package: || {
@@ -65,7 +84,33 @@ mod cogov {
     )
 	}
 
-	// ledger
+	#[entry_def]
+	fn action_def() -> ValidatingEntryType {
+		entry!(
+			name: "action",
+			description: "A cogov collective action",
+			sharing: Sharing::Public,
+			validation_package: || {
+				hdk::ValidationPackageDefinition::Entry
+			},
+			validation: | _validation_data: hdk::EntryValidationData<Action>| {
+				Ok(())
+			},
+			links: [
+				to!(
+					"action",
+					link_type: "child_action",
+					validation_package: || {
+						hdk::ValidationPackageDefinition::Entry
+					},
+					validation: |_validation_data: hdk::LinkValidationData| {
+						Ok(())
+					}
+				)
+			]
+    )
+	}
+
 	#[entry_def]
 	fn ledger_def() -> ValidatingEntryType {
 		entry!(
@@ -97,7 +142,7 @@ mod cogov {
 	}
 
 	#[init]
-	fn init() -> Result<(), ()> {
+	fn init() -> ZomeApiResult<()> {
 		Ok(())
 	}
 
@@ -118,9 +163,33 @@ mod cogov {
 			Collective {
 				name: collective.name,
 			})?;
+		let action = Action {
+			op: "create_collective".into(),
+			status: ActionStatus::Executed,
+			data: (&collective__).into(),
+			tag: "".into(),
+			action_intent: ActionIntent::SystemAutomatic,
+		};
+		let action_entry = Entry::App("action".into(), action.borrow().into());
+		hdk::commit_entry(&action_entry)?;
 		Ok(CollectivePayload {
 			collective_address,
 			collective: collective__,
+		})
+	}
+
+	#[zome_fn("hc_public")]
+	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
+	pub fn get_actions(collective_address: Address) -> ZomeApiResult<ActionsPayload> {
+		let collective_address__ = collective_address.clone();
+		let actions = hdk::utils::get_links_and_load_type(
+			&collective_address__,
+			LinkMatch::Exactly("collective_action"),
+			LinkMatch::Any,
+		)?;
+		Ok(ActionsPayload {
+			collective_address,
+			actions,
 		})
 	}
 

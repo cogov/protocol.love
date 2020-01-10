@@ -20,7 +20,6 @@ impl Default for Ledger {
 	}
 }
 
-#[allow(dead_code)]
 pub fn create_collective_ledger(collective: &Collective, collective_address: &Address) -> ZomeApiResult<Address> {
 	let ledger_name = format!("Primary Ledger for {}", collective.name).to_string();
 	let ledger = Ledger {
