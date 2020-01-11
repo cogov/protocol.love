@@ -97,6 +97,16 @@ mod cogov {
 				Ok(())
 			},
 			links: [
+				from!(
+					"collective",
+					link_type: "action_collective",
+					validation_package: || {
+						hdk::ValidationPackageDefinition::Entry
+					},
+					validation: |_validation_data: hdk::LinkValidationData| {
+						Ok(())
+					}
+				),
 				to!(
 					"action",
 					link_type: "child_action",
@@ -171,7 +181,13 @@ mod cogov {
 			action_intent: ActionIntent::SystemAutomatic,
 		};
 		let action_entry = Entry::App("action".into(), action.borrow().into());
-		hdk::commit_entry(&action_entry)?;
+		let action_address = hdk::commit_entry(&action_entry)?;
+		hdk::link_entries(
+			&collective_address,
+			&action_address,
+			"collective_action",
+			"create_collective",
+		)?;
 		Ok(CollectivePayload {
 			collective_address,
 			collective: collective__,
@@ -181,9 +197,8 @@ mod cogov {
 	#[zome_fn("hc_public")]
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 	pub fn get_actions(collective_address: Address) -> ZomeApiResult<ActionsPayload> {
-		let collective_address__ = collective_address.clone();
 		let actions = hdk::utils::get_links_and_load_type(
-			&collective_address__,
+			&collective_address,
 			LinkMatch::Exactly("collective_action"),
 			LinkMatch::Any,
 		)?;
