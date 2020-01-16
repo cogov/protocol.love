@@ -21,7 +21,7 @@ async function main() {
 		await alice.spawn({})
 //		const { carol } = await s.players({ carol: main_config }, true)
 		const { collective_address, collective } = await assert_create_collective()
-//		await assert_actions({ collective_address, collective })
+		await assert_actions({ collective_address, collective })
 		async function assert_create_collective() {
 			const create_collective_response = await alice.call('cogov', 'cogov', 'create_collective', {
 				collective: {
