@@ -19,41 +19,56 @@ async function main() {
 	orchestrator.registerScenario('create_collective; get_collective', async (s, t) => {
 		const { alice } = await s.players({ alice: main_config, })
 		await alice.spawn({})
-		// TODO: figure out consistency in test
 //		const { carol } = await s.players({ carol: main_config }, true)
-		const create_collective_response = await alice.call('cogov', 'cogov', 'create_collective', {
-			collective: {
-				name: `Collective 1`
-			}
-		})
-		const { Ok: { collective_address, collective } } = create_collective_response
-		t.assert(collective_address, 'collective_address should be truthy')
-		t.assert(collective, 'collective should be truthy')
+		const { collective_address, collective } = await assert_create_collective()
+//		await assert_actions({ collective_address, collective })
+		async function assert_create_collective() {
+			const create_collective_response = await alice.call('cogov', 'cogov', 'create_collective', {
+				collective: {
+					name: `Collective 1`
+				}
+			})
+			const { Ok: { collective_address, collective } } = create_collective_response
+			t.assert(collective_address, 'collective_address should be truthy')
+			t.assert(collective, 'collective should be truthy')
+			// TODO: figure out consistency in test
 //		await s.consistency()
 //		const get_collective_response = await carol.call('cogov', 'cogov', 'get_collective', {
-		const get_collective_response = await alice.call('cogov', 'cogov', 'get_collective', {
-			collective_address,
-		})
-		t.deepEqual(get_collective_response, {
-				Ok: {
-					collective_address,
-					collective,
+			const get_collective_response = await alice.call('cogov', 'cogov', 'get_collective', {
+				collective_address,
+			})
+			t.deepEqual(get_collective_response, {
+					Ok: {
+						collective_address,
+						collective,
+					}
 				}
+			)
+			return {
+				collective_address,
+				collective,
 			}
-		)
-//		const get_actions_response = await alice.call('cogov', 'cogov', 'get_actions', {
-//			collective_address,
-//		})
-//		t.deepEqual(get_actions_response, {
-//				Ok: [
-//					{
-//						collective_address,
-//						collective,
-//					},
-//				]
-//			}
-//		)
+		}
+		async function assert_actions({ collective_address, collective }) {
+			const get_actions_response = await alice.call('cogov', 'cogov', 'get_actions', {
+				collective_address,
+			})
+			t.deepEqual(get_actions_response, {
+					Ok: [
+						{
+							collective_address,
+							collective,
+						},
+					]
+				}
+			)
+		}
 	})
 	const report = await orchestrator.run()
 	console.log(report)
+}
+function sleep(ms) {
+	return new Promise(resolve => {
+		setTimeout(resolve, ms)
+	})
 }
