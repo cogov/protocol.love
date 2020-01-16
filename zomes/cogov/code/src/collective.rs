@@ -51,14 +51,16 @@ pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<Collecti
 		Collective {
 			name: collective.name,
 		})?;
-	let action = Action {
+	let create_collective_action = Action {
 		op: "create_collective".into(),
 		status: ActionStatus::Executed,
 		data: (&collective).into(),
 		tag: "".into(),
 		action_intent: ActionIntent::SystemAutomatic,
 	};
-	let action_entry = Entry::App("action".into(), action.borrow().into());
+	let action_entry = Entry::App(
+		"action".into(),
+		create_collective_action.borrow().into());
 	let action_address = hdk::commit_entry(&action_entry)?;
 	hdk::link_entries(
 		&collective_address,
@@ -68,7 +70,7 @@ pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<Collecti
 	)?;
 	Ok(CollectivePayload {
 		collective_address,
-		collective: collective,
+		collective,
 	})
 }
 
