@@ -161,14 +161,14 @@ mod cogov {
 		crate::collective::create_collective(collective)
 	}
 
-	#[zome_fn("hc_public")]
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
+	#[zome_fn("hc_public")]
 	pub fn get_actions(collective_address: Address) -> ZomeApiResult<ActionsPayload> {
 		crate::action::get_actions(collective_address)
 	}
 
-	#[zome_fn("hc_public")]
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
+	#[zome_fn("hc_public")]
 	pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePayload> {
 		crate::collective::get_collective(collective_address)
 	}
