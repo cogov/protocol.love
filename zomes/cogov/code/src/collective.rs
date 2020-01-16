@@ -33,18 +33,6 @@ pub struct CollectivePayload {
 	pub collective: Collective,
 }
 
-pub fn commit_collective(collective: Collective) -> ZomeApiResult<(Address, Entry, Collective)> {
-	let collective_entry = Entry::App("collective".into(), collective.borrow().into());
-	let collective_address = hdk::commit_entry(&collective_entry)?;
-	create_collective_ledger(&collective.borrow(), &collective_address)?;
-	Ok((collective_address, collective_entry, collective))
-}
-
-pub fn get_collective_entry(collective_address: Address) -> ZomeApiResult<Option<Entry>> {
-	let collective_entry = hdk::get_entry(&collective_address)?;
-	Ok(collective_entry)
-}
-
 // curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
 pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
 	let (collective_address, _collective_entry, collective) = commit_collective(
@@ -82,4 +70,11 @@ pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePa
 		collective_address,
 		collective,
 	})
+}
+
+fn commit_collective(collective: Collective) -> ZomeApiResult<(Address, Entry, Collective)> {
+	let collective_entry = Entry::App("collective".into(), collective.borrow().into());
+	let collective_address = hdk::commit_entry(&collective_entry)?;
+	create_collective_ledger(&collective.borrow(), &collective_address)?;
+	Ok((collective_address, collective_entry, collective))
 }
