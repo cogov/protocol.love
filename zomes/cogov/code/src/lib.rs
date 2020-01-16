@@ -35,10 +35,16 @@ mod cogov {
 	use crate::collective::{
 		Collective,
 		commit_collective,
-		CollectiveParams, CollectivePayload,
+		CollectiveParams,
+		CollectivePayload,
 	};
 	use crate::leger::Ledger;
-	use crate::proposal::{Proposal, commit_proposal, ProposalParams, ProposalPayload};
+	use crate::proposal::{
+		Proposal,
+		commit_proposal,
+		ProposalParams,
+		ProposalPayload
+	};
 	use crate::action::{
 		Action,
 		ActionsPayload,
