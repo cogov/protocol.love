@@ -39,3 +39,15 @@ pub fn commit_proposal(proposal: Proposal) -> ZomeApiResult<(Address, Entry, Pro
 	let proposal_address = hdk::commit_entry(&proposal_entry)?;
 	Ok((proposal_address, proposal_entry, proposal))
 }
+
+pub fn create_proposal(proposal_params: ProposalParams) -> ZomeApiResult<ProposalPayload> {
+	let (proposal_address, _proposal_entry, proposal2) =
+		commit_proposal(Proposal {
+			name: proposal_params.name,
+			content: proposal_params.content,
+		})?;
+	Ok(ProposalPayload {
+		proposal_address,
+		proposal: proposal2,
+	})
+}

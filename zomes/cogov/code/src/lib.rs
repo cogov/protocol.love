@@ -18,7 +18,7 @@ pub mod leger;
 pub mod proposal;
 
 use hdk_proc_macros::zome;
-use std::borrow::Borrow;
+//use std::borrow::Borrow;
 
 #[zome]
 mod cogov {
@@ -30,27 +30,11 @@ mod cogov {
 		cas::content::Address
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
-	use holochain_wasm_utils::holochain_core_types::link::LinkMatch;
 
-	use crate::collective::{
-		Collective,
-		commit_collective,
-		CollectiveParams,
-		CollectivePayload,
-	};
+	use crate::collective::{Collective, CollectivePayload, CollectiveParams};
 	use crate::leger::Ledger;
-	use crate::proposal::{
-		Proposal,
-		commit_proposal,
-		ProposalParams,
-		ProposalPayload
-	};
-	use crate::action::{
-		Action,
-		ActionsPayload,
-		ActionStatus,
-		ActionIntent,
-	};
+	use crate::proposal::{Proposal, ProposalParams, ProposalPayload};
+	use crate::action::{Action, ActionsPayload};
 
 	// collective
 	#[entry_def]
@@ -173,67 +157,24 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
-	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
 	pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
-		let (collective_address, _collective_entry, collective__) = commit_collective(
-			Collective {
-				name: collective.name,
-			})?;
-		let action = Action {
-			op: "create_collective".into(),
-			status: ActionStatus::Executed,
-			data: (&collective__).into(),
-			tag: "".into(),
-			action_intent: ActionIntent::SystemAutomatic,
-		};
-		let action_entry = Entry::App("action".into(), action.borrow().into());
-		let action_address = hdk::commit_entry(&action_entry)?;
-		hdk::link_entries(
-			&collective_address,
-			&action_address,
-			"collective_action",
-			"create_collective",
-		)?;
-		Ok(CollectivePayload {
-			collective_address,
-			collective: collective__,
-		})
+		crate::collective::create_collective(collective)
 	}
 
 	#[zome_fn("hc_public")]
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 	pub fn get_actions(collective_address: Address) -> ZomeApiResult<ActionsPayload> {
-		let actions = hdk::utils::get_links_and_load_type(
-			&collective_address,
-			LinkMatch::Exactly("collective_action"),
-			LinkMatch::Any,
-		)?;
-		Ok(ActionsPayload {
-			collective_address,
-			actions,
-		})
+		crate::action::get_actions(collective_address)
 	}
 
 	#[zome_fn("hc_public")]
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 	pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePayload> {
-		let collective_address__ = collective_address.clone();
-		let collective = hdk::utils::get_as_type(collective_address__)?;
-		Ok(CollectivePayload {
-			collective_address,
-			collective,
-		})
+		crate::collective::get_collective(collective_address)
 	}
 
 	#[zome_fn("hc_public")]
 	pub fn create_proposal(proposal: ProposalParams) -> ZomeApiResult<ProposalPayload> {
-		let (proposal_address, _proposal_entry, proposal2) = commit_proposal(Proposal {
-			name: proposal.name,
-			content: proposal.content,
-		})?;
-		Ok(ProposalPayload {
-			proposal_address,
-			proposal: proposal2,
-		})
+		crate::proposal::create_proposal(proposal)
 	}
 }

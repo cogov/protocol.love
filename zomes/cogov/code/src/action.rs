@@ -6,6 +6,7 @@ use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
 use std::borrow::Borrow;
 use hdk::error::ZomeApiResult;
+use holochain_wasm_utils::holochain_core_types::link::LinkMatch;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Action {
@@ -75,4 +76,17 @@ impl ChildAction for Action {
 		)?;
 		Ok((action_address, action_entry, self))
 	}
+}
+
+// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
+pub fn get_actions(collective_address: Address) -> ZomeApiResult<ActionsPayload> {
+	let actions = hdk::utils::get_links_and_load_type(
+		&collective_address,
+		LinkMatch::Exactly("collective_action"),
+		LinkMatch::Any,
+	)?;
+	Ok(ActionsPayload {
+		collective_address,
+		actions,
+	})
 }
