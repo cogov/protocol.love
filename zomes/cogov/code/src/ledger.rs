@@ -2,9 +2,10 @@ use hdk::holochain_json_api::{
 	json::JsonString,
 	error::JsonError,
 };
+use hdk::holochain_core_types::dna::entry_types::Sharing;
 use crate::collective::Collective;
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
-use hdk::prelude::ZomeApiResult;
+use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -18,6 +19,20 @@ impl Default for Ledger {
 			name: "unnamed ledger".to_string(),
 		}
 	}
+}
+
+pub fn ledger_def() -> ValidatingEntryType {
+	entry!(
+			name: "ledger",
+			description: "A cogov collective ledger",
+			sharing: Sharing::Public,
+			validation_package: || {
+				hdk::ValidationPackageDefinition::Entry
+			},
+			validation: | _validation_data: hdk::EntryValidationData<Ledger>| {
+				Ok(())
+			}
+    )
 }
 
 pub fn create_collective_ledger(collective: &Collective, collective_address: &Address) -> ZomeApiResult<Address> {

@@ -1,11 +1,12 @@
 use std::borrow::Borrow;
+use hdk::holochain_core_types::dna::entry_types::Sharing;
 use hdk::holochain_json_api::{
 	json::JsonString,
 	error::JsonError,
 };
-use crate::leger::create_collective_ledger;
+use crate::ledger::create_collective_ledger;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
-use hdk::prelude::ZomeApiResult;
+use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
 use crate::action::{Action, ActionStatus, ActionIntent};
 
@@ -31,6 +32,42 @@ impl Default for Collective {
 pub struct CollectivePayload {
 	pub collective_address: Address,
 	pub collective: Collective,
+}
+
+pub fn collective_def() -> ValidatingEntryType {
+	entry!(
+			name: "collective",
+			description: "A cogov collective",
+			sharing: Sharing::Public,
+			validation_package: || {
+				hdk::ValidationPackageDefinition::Entry
+			},
+			validation: | _validation_data: hdk::EntryValidationData<Collective>| {
+				Ok(())
+			},
+			links: [
+				to!(
+					"action",
+					link_type: "collective_action",
+					validation_package: || {
+						hdk::ValidationPackageDefinition::Entry
+					},
+					validation: |_validation_data: hdk::LinkValidationData| {
+						Ok(())
+					}
+				),
+				to!(
+					"ledger",
+					link_type: "collective_ledger",
+					validation_package: || {
+						hdk::ValidationPackageDefinition::Entry
+					},
+					validation: |_validation_data: hdk::LinkValidationData| {
+						Ok(())
+					}
+				)
+			]
+    )
 }
 
 // curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
@@ -78,3 +115,7 @@ fn commit_collective(collective: Collective) -> ZomeApiResult<(Address, Entry, C
 	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	Ok((collective_address, collective_entry, collective))
 }
+
+//enum ActionName {
+//	collective_action = "collective_action",
+//}

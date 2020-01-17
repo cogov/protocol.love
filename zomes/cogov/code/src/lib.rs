@@ -14,7 +14,7 @@ extern crate holochain_json_derive;
 
 pub mod action;
 pub mod collective;
-pub mod leger;
+pub mod ledger;
 pub mod proposal;
 
 use hdk_proc_macros::zome;
@@ -22,123 +22,35 @@ use hdk_proc_macros::zome;
 
 #[zome]
 mod cogov {
-	use hdk::holochain_core_types::{
-		entry::Entry,
-		dna::entry_types::Sharing,
-	};
+	use hdk::holochain_core_types::entry::Entry;
 	use hdk::holochain_persistence_api::{
 		cas::content::Address
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
 
-	use crate::collective::{Collective, CollectivePayload, CollectiveParams};
-	use crate::leger::Ledger;
-	use crate::proposal::{Proposal, ProposalParams, ProposalPayload};
-	use crate::action::{Action, ActionsPayload};
+	use crate::collective::{CollectivePayload, CollectiveParams};
+	use crate::proposal::{ProposalParams, ProposalPayload};
+	use crate::action::ActionsPayload;
 
 	// collective
 	#[entry_def]
 	fn collective_def() -> ValidatingEntryType {
-		entry!(
-			name: "collective",
-			description: "A cogov collective",
-			sharing: Sharing::Public,
-			validation_package: || {
-				hdk::ValidationPackageDefinition::Entry
-			},
-			validation: | _validation_data: hdk::EntryValidationData<Collective>| {
-				Ok(())
-			},
-			links: [
-				to!(
-					"action",
-					link_type: "collective_action",
-					validation_package: || {
-						hdk::ValidationPackageDefinition::Entry
-					},
-					validation: |_validation_data: hdk::LinkValidationData| {
-						Ok(())
-					}
-				),
-				to!(
-					"ledger",
-					link_type: "collective_ledger",
-					validation_package: || {
-						hdk::ValidationPackageDefinition::Entry
-					},
-					validation: |_validation_data: hdk::LinkValidationData| {
-						Ok(())
-					}
-				)
-			]
-    )
+		crate::collective::collective_def()
 	}
 
 	#[entry_def]
 	fn action_def() -> ValidatingEntryType {
-		entry!(
-			name: "action",
-			description: "A cogov collective action",
-			sharing: Sharing::Public,
-			validation_package: || {
-				hdk::ValidationPackageDefinition::Entry
-			},
-			validation: | _validation_data: hdk::EntryValidationData<Action>| {
-				Ok(())
-			},
-			links: [
-				from!(
-					"collective",
-					link_type: "action_collective",
-					validation_package: || {
-						hdk::ValidationPackageDefinition::Entry
-					},
-					validation: |_validation_data: hdk::LinkValidationData| {
-						Ok(())
-					}
-				),
-				to!(
-					"action",
-					link_type: "child_action",
-					validation_package: || {
-						hdk::ValidationPackageDefinition::Entry
-					},
-					validation: |_validation_data: hdk::LinkValidationData| {
-						Ok(())
-					}
-				)
-			]
-    )
+		crate::action::action_def()
 	}
 
 	#[entry_def]
 	fn ledger_def() -> ValidatingEntryType {
-		entry!(
-			name: "ledger",
-			description: "A cogov collective ledger",
-			sharing: Sharing::Public,
-			validation_package: || {
-				hdk::ValidationPackageDefinition::Entry
-			},
-			validation: | _validation_data: hdk::EntryValidationData<Ledger>| {
-				Ok(())
-			}
-    )
+		crate::ledger::ledger_def()
 	}
 
 	#[entry_def]
 	fn proposal_def() -> ValidatingEntryType {
-		entry!(
-			name: "proposal",
-			description: "A pro",
-			sharing: Sharing::Public,
-			validation_package: || {
-				hdk::ValidationPackageDefinition::Entry
-			},
-			validation: | _validation_data: hdk::EntryValidationData<Proposal>| {
-				Ok(())
-			}
-		)
+		crate::proposal::proposal_def()
 	}
 
 	#[init]

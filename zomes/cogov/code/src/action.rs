@@ -2,11 +2,13 @@ use hdk::holochain_json_api::{
 	json::JsonString,
 	error::JsonError,
 };
+use hdk::holochain_core_types::dna::entry_types::Sharing;
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
 use std::borrow::Borrow;
 use hdk::error::ZomeApiResult;
 use holochain_wasm_utils::holochain_core_types::link::LinkMatch;
+use hdk::prelude::ValidatingEntryType;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Action {
@@ -76,6 +78,42 @@ impl ChildAction for Action {
 		)?;
 		Ok((action_address, action_entry, self))
 	}
+}
+
+pub fn action_def() -> ValidatingEntryType {
+	entry!(
+			name: "action",
+			description: "A cogov collective action",
+			sharing: Sharing::Public,
+			validation_package: || {
+				hdk::ValidationPackageDefinition::Entry
+			},
+			validation: | _validation_data: hdk::EntryValidationData<Action>| {
+				Ok(())
+			},
+			links: [
+				from!(
+					"collective",
+					link_type: "action_collective",
+					validation_package: || {
+						hdk::ValidationPackageDefinition::Entry
+					},
+					validation: |_validation_data: hdk::LinkValidationData| {
+						Ok(())
+					}
+				),
+				to!(
+					"action",
+					link_type: "child_action",
+					validation_package: || {
+						hdk::ValidationPackageDefinition::Entry
+					},
+					validation: |_validation_data: hdk::LinkValidationData| {
+						Ok(())
+					}
+				)
+			]
+    )
 }
 
 // curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
