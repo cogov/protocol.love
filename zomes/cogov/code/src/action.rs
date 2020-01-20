@@ -12,11 +12,16 @@ use hdk::prelude::ValidatingEntryType;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Action {
-	pub op: String,
+	pub op: ActionOp,
 	pub status: ActionStatus,
 	pub data: JsonString,
 	pub tag: String,
 	pub action_intent: ActionIntent,
+}
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub enum ActionOp {
+	CreateCollective
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]

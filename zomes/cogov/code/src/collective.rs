@@ -8,7 +8,7 @@ use crate::ledger::create_collective_ledger;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
 use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
-use crate::action::{Action, ActionStatus, ActionIntent};
+use crate::action::{Action, ActionStatus, ActionIntent, ActionOp};
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CollectiveParams {
@@ -77,7 +77,7 @@ pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<Collecti
 			name: collective.name,
 		})?;
 	let create_collective_action = Action {
-		op: "create_collective".into(),
+		op: ActionOp::CreateCollective,
 		status: ActionStatus::Executed,
 		data: (&collective).into(),
 		tag: "".into(),
@@ -115,7 +115,3 @@ fn commit_collective(collective: Collective) -> ZomeApiResult<(Address, Entry, C
 	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	Ok((collective_address, collective_entry, collective))
 }
-
-//enum ActionName {
-//	collective_action = "collective_action",
-//}
