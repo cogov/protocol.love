@@ -76,6 +76,7 @@ pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<Collecti
 		Collective {
 			name: collective.name,
 		})?;
+	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	let create_collective_action = Action {
 		op: ActionOp::CreateCollective,
 		status: ActionStatus::Executed,
@@ -112,6 +113,5 @@ pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePa
 fn commit_collective(collective: Collective) -> ZomeApiResult<(Address, Entry, Collective)> {
 	let collective_entry = Entry::App("collective".into(), collective.borrow().into());
 	let collective_address = hdk::commit_entry(&collective_entry)?;
-	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	Ok((collective_address, collective_entry, collective))
 }
