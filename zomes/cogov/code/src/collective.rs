@@ -9,6 +9,7 @@ use holochain_wasm_utils::holochain_core_types::entry::Entry;
 use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
 use crate::action::{Action, ActionStatus, ActionIntent, ActionOp};
+use crate::utils::get_as_type_ref;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CollectiveParams {
@@ -106,6 +107,20 @@ pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePa
 	let collective_address__ = collective_address.clone();
 	let collective = hdk::utils::get_as_type(collective_address__)?;
 	Ok(CollectivePayload {
+		collective_address,
+		collective,
+	})
+}
+
+pub fn set_collective_name(collective_address: Address, collective_name: String) -> ZomeApiResult<CollectivePayload> {
+	let saved_collective = get_as_type_ref(&collective_address)?;
+	let collective = Collective {
+		name: collective_name,
+		..saved_collective
+	};
+	let collective_entry = Entry::App("collective".into(), (&collective).into());
+	hdk::update_entry(collective_entry, &collective_address)?;
+	Ok(CollectivePayload{
 		collective_address,
 		collective,
 	})

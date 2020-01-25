@@ -16,6 +16,7 @@ pub mod action;
 pub mod collective;
 pub mod ledger;
 pub mod proposal;
+pub mod utils;
 
 use hdk_proc_macros::zome;
 //use std::borrow::Borrow;
@@ -71,6 +72,11 @@ mod cogov {
 	#[zome_fn("hc_public")]
 	pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
 		crate::collective::create_collective(collective)
+	}
+
+	#[zome_fn("hc_public")]
+	pub fn set_collective_name(collective_address: Address, collective_name: String) -> ZomeApiResult<CollectivePayload> {
+		crate::collective::set_collective_name(collective_address, collective_name)
 	}
 
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888

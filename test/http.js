@@ -1,9 +1,10 @@
 const test = require('tape-async')
 const fetch = require('node-fetch')
 const { TEST_URL } = process.env
+const deepEqual = require('deep-equal')
 console.debug(`TEST_URL`, TEST_URL)
-// Point to your DNA file and give it a nickname.
-// The DNA file can either be on your filesystem...
+const assign = Object.assign
+const clone = (...arg_a1) => assign({}, ...arg_a1)
 main()
 async function main() {
 	test('scenario: create_collective, get_collective, set_collective_name', async (t) => {
@@ -17,12 +18,50 @@ async function main() {
 				]
 			}
 		})
+		const {
+			collective: collective__renamed,
+			collective_address: collective_address__renamed
+		} =
+			await assert_set_collective_name(t, {
+				collective_address,
+				collective,
+				collective_name: 'Renamed Collective'
+			})
+		t.equal(collective_address, collective_address__renamed)
+		await assert_get_collective(t, {
+			collective_address: collective_address__renamed,
+			collective: collective__renamed
+		}, { timeout_ms: 5000 })
 	})
+}
+async function assert_set_collective_name(t, { collective_address, collective, collective_name }) {
+	const api_result = await _api_result(_api_params(
+		'set_collective_name',
+		{
+			collective_address,
+			collective_name,
+		}))
+	const {
+		Ok: {
+			collective_address: collective_address__result,
+			collective: collective__result,
+		}
+	} = api_result
+	t.deepEqual(
+		clone(collective, { name: collective_name }),
+		collective__result)
+	return {
+		collective_address,
+		collective: collective__result,
+	}
 }
 async function _api_result(params) {
 	const response = await post_api(params)
 	const json = await response.json()
 	const { result } = json
+	if (!result) {
+		throw json
+	}
 	return JSON.parse(result)
 }
 async function post_api(params) {
@@ -68,20 +107,30 @@ async function assert_create_collective(t) {
 		collective,
 	}
 }
-async function assert_get_collective(t, { collective_address, collective }) {
-	const get_collective_result =
-		await _api_result(_api_params(
-			'get_collective', {
-				collective_address,
+async function assert_get_collective(t, { collective_address, collective }, opts = {}) {
+	const { timeout_ms } = opts
+	if (timeout_ms != null) {
+		await wait_for(
+			async () =>
+				do_assert_get_collective(deepEqual),
+			timeout_ms)
+	}
+	return do_assert_get_collective(t.deepEqual)
+	async function do_assert_get_collective(deepEqual) {
+		const get_collective_result =
+			await _api_result(_api_params(
+				'get_collective', {
+					collective_address,
+				}
+			))
+		return deepEqual(get_collective_result, {
+				Ok: {
+					collective_address,
+					collective,
+				}
 			}
-		))
-	t.deepEqual(get_collective_result, {
-			Ok: {
-				collective_address,
-				collective,
-			}
-		}
-	)
+		)
+	}
 }
 function _get_actions_result(collective_address) {
 	return _api_result(_api_params(
@@ -99,6 +148,28 @@ function _create_collective_action(collective) {
 		tag: '',
 		action_intent: 'SystemAutomatic'
 	}
+}
+async function wait_for(afn, timeout_ms = 5000, sleep_ms = 100) {
+	const start_ms = _now_ms()
+	console.debug('wait_for|debug|0', {
+		start_ms,
+		timeout_ms,
+		sleep_ms,
+	})
+	while (!(await afn())) {
+		console.debug('wait_for|debug|1', {
+			now_ms: _now_ms(),
+			'start_ms + timeout_ms': start_ms + timeout_ms,
+		})
+		if (_now_ms() > (start_ms + timeout_ms)) {
+			return false
+		}
+		await sleep(sleep_ms)
+	}
+	return true
+}
+function _now_ms() {
+	return new Date().getTime()
 }
 function sleep(ms) {
 	return new Promise(resolve => {
