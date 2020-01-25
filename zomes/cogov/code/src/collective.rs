@@ -14,17 +14,29 @@ use crate::utils::get_as_type_ref;
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CollectiveParams {
 	pub name: String,
+	pub total_shares: i64,
+}
+
+impl Into<Collective> for CollectiveParams {
+	fn into(self) -> Collective {
+		Collective {
+			name: self.name,
+			total_shares: self.total_shares,
+		}
+	}
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Collective {
 	pub name: String,
+	pub total_shares: i64,
 }
 
 impl Default for Collective {
 	fn default() -> Self {
 		Collective {
 			name: "unnamed collective".to_string(),
+			total_shares: 100000,
 		}
 	}
 }
@@ -72,12 +84,9 @@ pub fn collective_def() -> ValidatingEntryType {
 }
 
 // curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
-pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
+pub fn create_collective(collective_params: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
 	let CommitCollectiveResponse(collective_address, _collective_entry, collective) =
-		commit_collective(
-			Collective {
-				name: collective.name,
-			})?;
+		commit_collective(collective_params.into())?;
 	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	create_create_collective_action(&collective_address, &collective)?;
 	create_set_collective_name_action(&collective_address, &collective.name)?;

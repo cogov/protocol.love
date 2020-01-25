@@ -10,7 +10,7 @@ async function main() {
 	test('scenario: create_collective, get_collective, set_collective_name', async (t) => {
 		const { collective_address, collective } = await assert_create_collective(t)
 		await assert_get_collective(t, { collective_address, collective })
-		t.deepEqual(await _get_actions_result(collective_address), {
+		t.deepEqual(await _get_actions_result(t, collective_address), {
 			Ok: {
 				collective_address: collective_address,
 				actions: [
@@ -34,7 +34,7 @@ async function main() {
 			collective_address: collective_address__renamed,
 			collective: collective__renamed
 		}, { timeout_ms: 5000 })
-		t.deepEqual(await _get_actions_result(collective_address), {
+		t.deepEqual(await _get_actions_result(t, collective_address), {
 			Ok: {
 				collective_address: collective_address,
 				actions: [
@@ -47,7 +47,7 @@ async function main() {
 	})
 }
 async function assert_set_collective_name(t, { collective_address, collective, collective_name }) {
-	const api_result = await _api_result(_api_params(
+	const api_result = await _api_result(t, _api_params(
 		'set_collective_name',
 		{
 			collective_address,
@@ -67,12 +67,12 @@ async function assert_set_collective_name(t, { collective_address, collective, c
 		collective: collective__result,
 	}
 }
-async function _api_result(params) {
+async function _api_result(t, params) {
 	const response = await post_api(params)
 	const json = await response.json()
 	const { result } = json
 	if (!result) {
-		throw json
+		t.fail(JSON.stringify(json))
 	}
 	return JSON.parse(result)
 }
@@ -101,16 +101,24 @@ function _api_params(function_name, args) {
 }
 async function assert_create_collective(t) {
 	const create_collective_result =
-		await _api_result(_api_params(
+		await _api_result(t, _api_params(
 			'create_collective', {
 				collective: {
-					name: 'Collective 1'
+					name: 'Flower of Life Collective',
+					total_shares: 500000
 				}
 			}
 		))
-	const { Ok: { collective_address, collective } } = create_collective_result
+	const { Ok } = create_collective_result
+	if (!Ok) {
+		t.fail(JSON.stringify(create_collective_result))
+	}
+	const { collective_address, collective } = Ok
 	t.assert(collective_address, 'collective_address should be truthy')
-	t.assert(collective, 'collective should be truthy')
+	t.deepEqual(collective, {
+		name: 'Flower of Life Collective',
+		total_shares: 500000
+	})
 	return {
 		collective_address,
 		collective,
@@ -127,22 +135,24 @@ async function assert_get_collective(t, { collective_address, collective }, opts
 	return do_assert_get_collective(t.deepEqual)
 	async function do_assert_get_collective(deepEqual) {
 		const get_collective_result =
-			await _api_result(_api_params(
+			await _api_result(t, _api_params(
 				'get_collective', {
 					collective_address,
 				}
 			))
-		return deepEqual(get_collective_result, {
-				Ok: {
-					collective_address,
-					collective,
-				}
+		const { Ok } = get_collective_result
+		if (!Ok) {
+			t.fail(JSON.stringify(get_collective_result))
+		}
+		return deepEqual(Ok, {
+				collective_address,
+				collective,
 			}
 		)
 	}
 }
-function _get_actions_result(collective_address) {
-	return _api_result(_api_params(
+function _get_actions_result(t, collective_address) {
+	return _api_result(t, _api_params(
 		'get_actions',
 		{
 			collective_address
