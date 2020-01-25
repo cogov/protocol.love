@@ -6,8 +6,9 @@ console.debug(`TEST_URL`, TEST_URL)
 // The DNA file can either be on your filesystem...
 main()
 async function main() {
-	test('scenario: create, get, rename collective', async (t) => {
+	test('scenario: create_collective, get_collective, set_collective_name', async (t) => {
 		const { collective_address, collective } = await assert_create_collective(t)
+		await assert_get_collective(t, { collective_address, collective })
 		await assert_actions(t, { collective_address, collective })
 	})
 }
@@ -55,9 +56,12 @@ async function assert_create_collective(t) {
 	const { Ok: { collective_address, collective } } = create_collective_result
 	t.assert(collective_address, 'collective_address should be truthy')
 	t.assert(collective, 'collective should be truthy')
-	// TODO: figure out consistency in test
-//		await s.consistency()
-//		const get_collective_result = await carol.call('cogov', 'cogov', 'get_collective', {
+	return {
+		collective_address,
+		collective,
+	}
+}
+async function assert_get_collective(t, { collective_address, collective }) {
 	const get_collective_result =
 		await _api_result(_api_params(
 			'get_collective', {
@@ -71,10 +75,6 @@ async function assert_create_collective(t) {
 			}
 		}
 	)
-	return {
-		collective_address,
-		collective,
-	}
 }
 async function assert_actions(t, { collective_address, collective }) {
 	const get_actions_result =
@@ -91,7 +91,7 @@ async function assert_actions(t, { collective_address, collective }) {
 				{
 					op: 'CreateCollective',
 					status: 'Executed',
-					data: '{"name":"Collective 1"}',
+					data: JSON.stringify(collective),
 					tag: '',
 					action_intent: 'SystemAutomatic'
 				},
