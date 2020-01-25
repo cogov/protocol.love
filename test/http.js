@@ -9,7 +9,14 @@ async function main() {
 	test('scenario: create_collective, get_collective, set_collective_name', async (t) => {
 		const { collective_address, collective } = await assert_create_collective(t)
 		await assert_get_collective(t, { collective_address, collective })
-		await assert_actions(t, { collective_address, collective })
+		t.deepEqual(await _get_actions_result(collective_address), {
+			Ok: {
+				collective_address: collective_address,
+				actions: [
+					_create_collective_action(collective),
+				]
+			}
+		})
 	})
 }
 async function _api_result(params) {
@@ -76,28 +83,22 @@ async function assert_get_collective(t, { collective_address, collective }) {
 		}
 	)
 }
-async function assert_actions(t, { collective_address, collective }) {
-	const get_actions_result =
-		await _api_result(_api_params(
-			'get_actions',
-			{
-				collective_address
-			}
-		))
-	t.deepEqual(get_actions_result, {
-		Ok: {
-			collective_address: collective_address,
-			actions: [
-				{
-					op: 'CreateCollective',
-					status: 'Executed',
-					data: JSON.stringify(collective),
-					tag: '',
-					action_intent: 'SystemAutomatic'
-				},
-			]
+function _get_actions_result(collective_address) {
+	return _api_result(_api_params(
+		'get_actions',
+		{
+			collective_address
 		}
-	})
+	))
+}
+function _create_collective_action(collective) {
+	return {
+		op: 'CreateCollective',
+		status: 'Executed',
+		data: JSON.stringify(collective),
+		tag: '',
+		action_intent: 'SystemAutomatic'
+	}
 }
 function sleep(ms) {
 	return new Promise(resolve => {
