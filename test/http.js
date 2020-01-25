@@ -15,6 +15,7 @@ async function main() {
 				collective_address: collective_address,
 				actions: [
 					_create_collective_action(collective),
+					_set_collective_name_action(collective.name),
 				]
 			}
 		})
@@ -28,10 +29,21 @@ async function main() {
 				collective_name: 'Renamed Collective'
 			})
 		t.equal(collective_address, collective_address__renamed)
+		t.notEqual(collective.name, collective__renamed.name)
 		await assert_get_collective(t, {
 			collective_address: collective_address__renamed,
 			collective: collective__renamed
 		}, { timeout_ms: 5000 })
+		t.deepEqual(await _get_actions_result(collective_address), {
+			Ok: {
+				collective_address: collective_address,
+				actions: [
+					_create_collective_action(collective),
+					_set_collective_name_action(collective.name),
+					_set_collective_name_action(collective__renamed.name),
+				]
+			}
+		})
 	})
 }
 async function assert_set_collective_name(t, { collective_address, collective, collective_name }) {
@@ -96,9 +108,6 @@ async function assert_create_collective(t) {
 				}
 			}
 		))
-	console.debug('assert_create_collective|debug|1', {
-		create_collective_response_json: create_collective_result,
-	})
 	const { Ok: { collective_address, collective } } = create_collective_result
 	t.assert(collective_address, 'collective_address should be truthy')
 	t.assert(collective, 'collective should be truthy')
@@ -149,18 +158,18 @@ function _create_collective_action(collective) {
 		action_intent: 'SystemAutomatic'
 	}
 }
+function _set_collective_name_action(collective_name) {
+	return {
+		op: 'SetCollectiveName',
+		status: 'Executed',
+		data: JSON.stringify({ collective_name }),
+		tag: '',
+		action_intent: 'SystemAutomatic'
+	}
+}
 async function wait_for(afn, timeout_ms = 5000, sleep_ms = 100) {
 	const start_ms = _now_ms()
-	console.debug('wait_for|debug|0', {
-		start_ms,
-		timeout_ms,
-		sleep_ms,
-	})
 	while (!(await afn())) {
-		console.debug('wait_for|debug|1', {
-			now_ms: _now_ms(),
-			'start_ms + timeout_ms': start_ms + timeout_ms,
-		})
 		if (_now_ms() > (start_ms + timeout_ms)) {
 			return false
 		}

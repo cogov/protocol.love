@@ -21,7 +21,8 @@ pub struct Action {
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub enum ActionOp {
-	CreateCollective
+	CreateCollective,
+	SetCollectiveName
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]

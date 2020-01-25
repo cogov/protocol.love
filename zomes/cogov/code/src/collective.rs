@@ -80,6 +80,7 @@ pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<Collecti
 			})?;
 	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	create_create_collective_action(&collective_address, &collective)?;
+	create_set_collective_name_action(&collective_address, &collective.name)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -104,6 +105,7 @@ pub fn set_collective_name(collective_address: Address, collective_name: String)
 	};
 	let collective_entry = Entry::App("collective".into(), (&collective).into());
 	hdk::update_entry(collective_entry, &collective_address)?;
+	create_set_collective_name_action(&collective_address, &collective.name)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -137,4 +139,32 @@ fn create_create_collective_action(collective_address: &Address, collective: &Co
 		"create_collective",
 	)?;
 	Ok((action_address, action_entry, create_collective_action))
+}
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+struct CollectiveNameActionData {
+	collective_name: String
+}
+
+fn create_set_collective_name_action(collective_address: &Address, collective_name: &String) -> ZomeApiResult<(Address, Entry, Action)> {
+	let set_collective_name_action = Action {
+		op: ActionOp::SetCollectiveName,
+		status: ActionStatus::Executed,
+		data: CollectiveNameActionData {
+			collective_name: collective_name.clone()
+		}.into(),
+		tag: "".into(),
+		action_intent: ActionIntent::SystemAutomatic,
+	};
+	let action_entry = Entry::App(
+		"action".into(),
+		set_collective_name_action.borrow().into());
+	let action_address = hdk::commit_entry(&action_entry)?;
+	hdk::link_entries(
+		&collective_address,
+		&action_address,
+		"collective_action",
+		"set_collective_name",
+	)?;
+	Ok((action_address, action_entry, set_collective_name_action))
 }
