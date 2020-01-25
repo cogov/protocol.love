@@ -75,8 +75,13 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn set_collective_name(collective_address: Address, collective_name: String) -> ZomeApiResult<CollectivePayload> {
-		crate::collective::set_collective_name(collective_address, collective_name)
+	pub fn set_collective_name(collective_address: Address, name: String) -> ZomeApiResult<CollectivePayload> {
+		crate::collective::set_collective_name(collective_address, name)
+	}
+
+	#[zome_fn("hc_public")]
+	pub fn set_collective_total_shares(collective_address: Address, total_shares: i64) -> ZomeApiResult<CollectivePayload> {
+		crate::collective::set_collective_total_shares(collective_address, total_shares)
 	}
 
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888

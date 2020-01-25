@@ -7,7 +7,7 @@ const assign = Object.assign
 const clone = (...arg_a1) => assign({}, ...arg_a1)
 main()
 async function main() {
-	test('scenario: create_collective, get_collective, set_collective_name', async (t) => {
+	test('scenario: create_collective, get_collective, set_collective_name, set_collective_total_shares', async (t) => {
 		const { collective_address, collective } = await assert_create_collective(t)
 		await assert_get_collective(t, { collective_address, collective })
 		t.deepEqual(await _get_actions_result(t, collective_address), {
@@ -27,7 +27,7 @@ async function main() {
 			await assert_set_collective_name(t, {
 				collective_address,
 				collective,
-				collective_name: 'Renamed Collective'
+				name: 'Renamed Collective'
 			})
 		t.equal(collective_address, collective_address__renamed)
 		t.notEqual(collective.name, collective__renamed.name)
@@ -46,24 +46,78 @@ async function main() {
 				]
 			}
 		})
+		const {
+			collective: collective__total_shares,
+			collective_address: collective_address__total_shares
+		} =
+			await assert_set_collective_total_shares(t, {
+				collective_address,
+				collective: collective__renamed,
+				total_shares: 750000
+			})
+		t.equal(collective_address, collective_address__total_shares)
+		t.notEqual(collective.total_shares, collective__total_shares.total_shares)
+		await assert_get_collective(t, {
+			collective_address: collective_address__total_shares,
+			collective: collective__total_shares
+		}, { timeout_ms: 5000 })
+		t.deepEqual(await _get_actions_result(t, collective_address), {
+			Ok: {
+				collective_address: collective_address,
+				actions: [
+					_create_collective_action(collective),
+					_set_collective_name_action(collective.name),
+					_set_total_shares_action(collective.total_shares),
+					_set_collective_name_action(collective__total_shares.name),
+					_set_total_shares_action(collective__total_shares.total_shares),
+				]
+			}
+		})
 	})
 }
-async function assert_set_collective_name(t, { collective_address, collective, collective_name }) {
+async function assert_set_collective_name(t, { collective_address, collective, name }) {
+	t.notEqual(collective.name, name)
 	const api_result = await _api_result(t, _api_params(
 		'set_collective_name',
 		{
 			collective_address,
-			collective_name,
+			name,
 		}))
+	const { Ok } = api_result
+	if (!Ok) {
+		t.fail(JSON.stringify(api_result))
+	}
 	const {
-		Ok: {
-			collective_address: collective_address__result,
-			collective: collective__result,
-		}
-	} = api_result
+		collective_address: collective_address__result,
+		collective: collective__result,
+	} = Ok
 	t.deepEqual(
-		clone(collective, { name: collective_name }),
+		clone(collective, { name }),
 		collective__result)
+	return {
+		collective_address,
+		collective: collective__result,
+	}
+}
+async function assert_set_collective_total_shares(t, { collective_address, collective, total_shares }) {
+	t.notEqual(collective.total_shares, total_shares)
+	const api_result = await _api_result(t, _api_params(
+		'set_collective_total_shares',
+		{
+			collective_address,
+			total_shares,
+		}))
+	const { Ok } = api_result
+	if (!Ok) {
+		t.fail(JSON.stringify(api_result))
+	}
+	const {
+		collective_address: collective_address__result,
+		collective: collective__result,
+	} = Ok
+	t.deepEqual(
+		collective__result,
+		clone(collective, { total_shares }))
 	return {
 		collective_address,
 		collective: collective__result,
@@ -147,10 +201,9 @@ async function assert_get_collective(t, { collective_address, collective }, opts
 			t.fail(JSON.stringify(get_collective_result))
 		}
 		return deepEqual(Ok, {
-				collective_address,
-				collective,
-			}
-		)
+			collective_address,
+			collective,
+		})
 	}
 }
 function _get_actions_result(t, collective_address) {
@@ -170,21 +223,21 @@ function _create_collective_action(collective) {
 		action_intent: 'SystemAutomatic'
 	}
 }
-function _set_collective_name_action(collective_name) {
+function _set_collective_name_action(name) {
 	return {
 		op: 'SetCollectiveName',
 		status: 'Executed',
-		data: JSON.stringify({ collective_name }),
+		data: JSON.stringify({ name }),
 		tag: 'set_collective_name',
 		action_intent: 'SystemAutomatic'
 	}
 }
 function _set_total_shares_action(total_shares) {
 	return {
-		op: 'SetTotalShares',
+		op: 'SetCollectiveTotalShares',
 		status: 'Executed',
 		data: JSON.stringify({ total_shares }),
-		tag: 'set_total_shares',
+		tag: 'set_collective_total_shares',
 		action_intent: 'SystemAutomatic'
 	}
 }

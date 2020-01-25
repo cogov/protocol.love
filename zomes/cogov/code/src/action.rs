@@ -23,7 +23,7 @@ pub struct Action {
 pub enum ActionOp {
 	CreateCollective,
 	SetCollectiveName,
-	SetTotalShares,
+	SetCollectiveTotalShares,
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]

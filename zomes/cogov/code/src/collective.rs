@@ -90,7 +90,7 @@ pub fn create_collective(collective_params: CollectiveParams) -> ZomeApiResult<C
 	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	create_create_collective_action(&collective_address, &collective)?;
 	create_set_collective_name_action(&collective_address, &collective.name)?;
-	create_set_total_shares_action(&collective_address, collective.total_shares)?;
+	create_set_collective_total_shares_action(&collective_address, collective.total_shares)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -107,19 +107,37 @@ pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePa
 	})
 }
 
-pub fn set_collective_name(collective_address: Address, collective_name: String) -> ZomeApiResult<CollectivePayload> {
+pub fn set_collective_name(collective_address: Address, name: String) -> ZomeApiResult<CollectivePayload> {
 	let saved_collective = get_as_type_ref(&collective_address)?;
 	let collective = Collective {
-		name: collective_name,
+		name,
 		..saved_collective
 	};
-	let collective_entry = Entry::App("collective".into(), (&collective).into());
-	hdk::update_entry(collective_entry, &collective_address)?;
+	update_collective(&collective_address, &collective)?;
 	create_set_collective_name_action(&collective_address, &collective.name)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
 	})
+}
+
+pub fn set_collective_total_shares(collective_address: Address, total_shares: i64) -> ZomeApiResult<CollectivePayload> {
+	let saved_collective = get_as_type_ref(&collective_address)?;
+	let collective = Collective {
+		total_shares,
+		..saved_collective
+	};
+	update_collective(&collective_address, &collective)?;
+	create_set_collective_total_shares_action(&collective_address, collective.total_shares)?;
+	Ok(CollectivePayload {
+		collective_address,
+		collective,
+	})
+}
+
+fn update_collective(collective_address: &Address, collective: &Collective) -> ZomeApiResult<Address> {
+	let collective_entry = Entry::App("collective".into(), collective.into());
+	hdk::update_entry(collective_entry, &collective_address)
 }
 
 struct CommitCollectiveResponse(Address, Entry, Collective);
@@ -142,15 +160,15 @@ fn create_create_collective_action(collective_address: &Address, collective: &Co
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 struct SetCollectiveNameActionData {
-	collective_name: String
+	name: String
 }
 
-fn create_set_collective_name_action(collective_address: &Address, collective_name: &String) -> ZomeApiResult<(Address, Entry, Action)> {
+fn create_set_collective_name_action(collective_address: &Address, name: &String) -> ZomeApiResult<(Address, Entry, Action)> {
 	create_collective_action(
 		collective_address,
 		ActionOp::SetCollectiveName,
 		SetCollectiveNameActionData {
-			collective_name: collective_name.clone()
+			name: name.clone()
 		}.into(),
 		&"set_collective_name".into(),
 		ActionIntent::SystemAutomatic,
@@ -162,14 +180,14 @@ struct SetTotalSharesActionData {
 	total_shares: i64,
 }
 
-fn create_set_total_shares_action(collective_address: &Address, total_shares: i64) -> ZomeApiResult<(Address, Entry, Action)> {
+fn create_set_collective_total_shares_action(collective_address: &Address, total_shares: i64) -> ZomeApiResult<(Address, Entry, Action)> {
 	create_collective_action(
 		collective_address,
-		ActionOp::SetTotalShares,
+		ActionOp::SetCollectiveTotalShares,
 		SetTotalSharesActionData {
 			total_shares
 		}.into(),
-		&"set_total_shares".into(),
+		&"set_collective_total_shares".into(),
 		ActionIntent::SystemAutomatic,
 	)
 }
