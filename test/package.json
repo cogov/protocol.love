@@ -3,8 +3,10 @@
 		"@holochain/tryorama": "^0.3.2-dev.2",
 		"faucet": "0.0.1",
 		"json3": "*",
+		"node-fetch": "^2.6.0",
 		"sleep": "^6.1.0",
-		"tape": "^4.12.1"
+		"tape": "^4.12.1",
+		"tape-async": "^2.3.0"
 	},
 	"devDependencies": {
 		"@types/node": "^13.1.4",
