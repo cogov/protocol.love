@@ -16,6 +16,7 @@ async function main() {
 				actions: [
 					_create_collective_action(collective),
 					_set_collective_name_action(collective.name),
+					_set_total_shares_action(collective.total_shares),
 				]
 			}
 		})
@@ -40,6 +41,7 @@ async function main() {
 				actions: [
 					_create_collective_action(collective),
 					_set_collective_name_action(collective.name),
+					_set_total_shares_action(collective.total_shares),
 					_set_collective_name_action(collective__renamed.name),
 				]
 			}
@@ -164,7 +166,7 @@ function _create_collective_action(collective) {
 		op: 'CreateCollective',
 		status: 'Executed',
 		data: JSON.stringify(collective),
-		tag: '',
+		tag: 'create_collective',
 		action_intent: 'SystemAutomatic'
 	}
 }
@@ -173,7 +175,16 @@ function _set_collective_name_action(collective_name) {
 		op: 'SetCollectiveName',
 		status: 'Executed',
 		data: JSON.stringify({ collective_name }),
-		tag: '',
+		tag: 'set_collective_name',
+		action_intent: 'SystemAutomatic'
+	}
+}
+function _set_total_shares_action(total_shares) {
+	return {
+		op: 'SetTotalShares',
+		status: 'Executed',
+		data: JSON.stringify({ total_shares }),
+		tag: 'set_total_shares',
 		action_intent: 'SystemAutomatic'
 	}
 }

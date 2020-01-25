@@ -90,6 +90,7 @@ pub fn create_collective(collective_params: CollectiveParams) -> ZomeApiResult<C
 	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	create_create_collective_action(&collective_address, &collective)?;
 	create_set_collective_name_action(&collective_address, &collective.name)?;
+	create_set_total_shares_action(&collective_address, collective.total_shares)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -130,50 +131,72 @@ fn commit_collective(collective: Collective) -> ZomeApiResult<CommitCollectiveRe
 }
 
 fn create_create_collective_action(collective_address: &Address, collective: &Collective) -> ZomeApiResult<(Address, Entry, Action)> {
-	let create_collective_action = Action {
-		op: ActionOp::CreateCollective,
-		status: ActionStatus::Executed,
-		data: collective.into(),
-		tag: "".into(),
-		action_intent: ActionIntent::SystemAutomatic,
-	};
-	let action_entry = Entry::App(
-		"action".into(),
-		create_collective_action.borrow().into());
-	let action_address = hdk::commit_entry(&action_entry)?;
-	hdk::link_entries(
-		&collective_address,
-		&action_address,
-		"collective_action",
-		"create_collective",
-	)?;
-	Ok((action_address, action_entry, create_collective_action))
+	create_collective_action(
+		collective_address,
+		ActionOp::CreateCollective,
+		collective.into(),
+		&"create_collective".into(),
+		ActionIntent::SystemAutomatic,
+	)
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-struct CollectiveNameActionData {
+struct SetCollectiveNameActionData {
 	collective_name: String
 }
 
 fn create_set_collective_name_action(collective_address: &Address, collective_name: &String) -> ZomeApiResult<(Address, Entry, Action)> {
-	let set_collective_name_action = Action {
-		op: ActionOp::SetCollectiveName,
-		status: ActionStatus::Executed,
-		data: CollectiveNameActionData {
+	create_collective_action(
+		collective_address,
+		ActionOp::SetCollectiveName,
+		SetCollectiveNameActionData {
 			collective_name: collective_name.clone()
 		}.into(),
-		tag: "".into(),
-		action_intent: ActionIntent::SystemAutomatic,
+		&"set_collective_name".into(),
+		ActionIntent::SystemAutomatic,
+	)
+}
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+struct SetTotalSharesActionData {
+	total_shares: i64,
+}
+
+fn create_set_total_shares_action(collective_address: &Address, total_shares: i64) -> ZomeApiResult<(Address, Entry, Action)> {
+	create_collective_action(
+		collective_address,
+		ActionOp::SetTotalShares,
+		SetTotalSharesActionData {
+			total_shares
+		}.into(),
+		&"set_total_shares".into(),
+		ActionIntent::SystemAutomatic,
+	)
+}
+
+fn create_collective_action(
+	collective_address: &Address,
+	op: ActionOp,
+	data: JsonString,
+	tag: &String,
+	action_intent: ActionIntent,
+) -> ZomeApiResult<(Address, Entry, Action)> {
+	let collective_action = Action {
+		op,
+		status: ActionStatus::Executed,
+		data: data.into(),
+		tag: tag.into(),
+		action_intent: action_intent.into(),
 	};
 	let action_entry = Entry::App(
 		"action".into(),
-		set_collective_name_action.borrow().into());
+		collective_action.borrow().into());
 	let action_address = hdk::commit_entry(&action_entry)?;
 	hdk::link_entries(
 		&collective_address,
 		&action_address,
 		"collective_action",
-		"set_collective_name",
+		tag,
 	)?;
-	Ok((action_address, action_entry, set_collective_name_action))
+	Ok((action_address, action_entry, collective_action))
 }
