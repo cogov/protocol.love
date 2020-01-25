@@ -79,23 +79,7 @@ pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<Collecti
 				name: collective.name,
 			})?;
 	create_collective_ledger(&collective.borrow(), &collective_address)?;
-	let create_collective_action = Action {
-		op: ActionOp::CreateCollective,
-		status: ActionStatus::Executed,
-		data: (&collective).into(),
-		tag: "".into(),
-		action_intent: ActionIntent::SystemAutomatic,
-	};
-	let action_entry = Entry::App(
-		"action".into(),
-		create_collective_action.borrow().into());
-	let action_address = hdk::commit_entry(&action_entry)?;
-	hdk::link_entries(
-		&collective_address,
-		&action_address,
-		"collective_action",
-		"create_collective",
-	)?;
+	create_create_collective_action(&collective_address, &collective)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -120,7 +104,7 @@ pub fn set_collective_name(collective_address: Address, collective_name: String)
 	};
 	let collective_entry = Entry::App("collective".into(), (&collective).into());
 	hdk::update_entry(collective_entry, &collective_address)?;
-	Ok(CollectivePayload{
+	Ok(CollectivePayload {
 		collective_address,
 		collective,
 	})
@@ -132,4 +116,25 @@ fn commit_collective(collective: Collective) -> ZomeApiResult<CommitCollectiveRe
 	let collective_entry = Entry::App("collective".into(), collective.borrow().into());
 	let collective_address = hdk::commit_entry(&collective_entry)?;
 	Ok(CommitCollectiveResponse(collective_address, collective_entry, collective))
+}
+
+fn create_create_collective_action(collective_address: &Address, collective: &Collective) -> ZomeApiResult<(Address, Entry, Action)> {
+	let create_collective_action = Action {
+		op: ActionOp::CreateCollective,
+		status: ActionStatus::Executed,
+		data: collective.into(),
+		tag: "".into(),
+		action_intent: ActionIntent::SystemAutomatic,
+	};
+	let action_entry = Entry::App(
+		"action".into(),
+		create_collective_action.borrow().into());
+	let action_address = hdk::commit_entry(&action_entry)?;
+	hdk::link_entries(
+		&collective_address,
+		&action_address,
+		"collective_action",
+		"create_collective",
+	)?;
+	Ok((action_address, action_entry, create_collective_action))
 }
