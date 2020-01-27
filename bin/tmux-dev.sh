@@ -10,7 +10,7 @@ tmux split-window -v $SHELL
 tmux send-keys 'tig' 'C-m'
 tmux select-pane -t 0
 tmux split-window -v $SHELL
-tmux send-keys 'nix-shell --run "hc run -i http" https://github.com/holochain/holonix/archive/develop.tar.gz' 'C-m'
+tmux send-keys 'hc-run.sh' 'C-m'
 tmux select-pane -t 0
 
 tmux select-window -t 0
