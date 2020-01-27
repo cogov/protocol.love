@@ -7,7 +7,9 @@ const assign = Object.assign
 const clone = (...arg_a1) => assign({}, ...arg_a1)
 main()
 async function main() {
-	test('scenario: create_collective, get_collective, set_collective_name, set_collective_total_shares', async (t) => {
+	test('scenario: create_person, get_person, create_collective, get_collective, set_collective_name, set_collective_total_shares', async (t) => {
+		const { person_address, person } = await assert_create_person(t)
+		await assert_get_person(t, { person_address, person })
 		const { collective_address, collective } = await assert_create_collective(t)
 		await assert_get_collective(t, { collective_address, collective })
 		t.deepEqual(await _get_actions_result(t, collective_address), {
@@ -153,6 +155,55 @@ function _api_params(function_name, args) {
 		'zome': 'cogov',
 		'function': function_name,
 		'args': args
+	}
+}
+async function assert_create_person(t) {
+	const create_person_result =
+		await _api_result(t, _api_params(
+			'create_person', {
+				person: {
+					name: 'Jane',
+				}
+			}
+		))
+	const { Ok } = create_person_result
+	if (!Ok) {
+		t.fail(JSON.stringify(create_person_result))
+	}
+	const { person_address, person } = Ok
+	t.assert(person_address, 'person_address should be truthy')
+	t.deepEqual(person, {
+		name: 'Jane',
+	})
+	return {
+		person_address,
+		person,
+	}
+}
+async function assert_get_person(t, { person_address, person }, opts = {}) {
+	const { timeout_ms } = opts
+	if (timeout_ms != null) {
+		await wait_for(
+			async () =>
+				do_assert_get_person(deepEqual),
+			timeout_ms)
+	}
+	return do_assert_get_person(t.deepEqual)
+	async function do_assert_get_person(deepEqual) {
+		const get_person_result =
+			await _api_result(t, _api_params(
+				'get_person', {
+					person_address,
+				}
+			))
+		const { Ok } = get_person_result
+		if (!Ok) {
+			t.fail(JSON.stringify(get_person_result))
+		}
+		return deepEqual(Ok, {
+			person_address,
+			person,
+		})
 	}
 }
 async function assert_create_collective(t) {

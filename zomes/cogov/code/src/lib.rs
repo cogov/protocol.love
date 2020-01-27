@@ -15,6 +15,7 @@ extern crate holochain_json_derive;
 pub mod action;
 pub mod collective;
 pub mod ledger;
+pub mod person;
 pub mod proposal;
 pub mod utils;
 
@@ -32,6 +33,7 @@ mod cogov {
 	use crate::collective::{CollectivePayload, CollectiveParams};
 	use crate::proposal::{ProposalParams, ProposalPayload};
 	use crate::action::ActionsPayload;
+	use crate::person::{PersonParams, PersonPayload};
 
 	// collective
 	#[entry_def]
@@ -47,6 +49,11 @@ mod cogov {
 	#[entry_def]
 	fn ledger_def() -> ValidatingEntryType {
 		crate::ledger::ledger_def()
+	}
+
+	#[entry_def]
+	fn person_def() -> ValidatingEntryType {
+		crate::person::person_def()
 	}
 
 	#[entry_def]
@@ -70,8 +77,24 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
+	pub fn create_person(person: PersonParams) -> ZomeApiResult<PersonPayload> {
+		crate::person::create_person(person)
+	}
+
+	#[zome_fn("hc_public")]
+	pub fn get_person(person_address: Address) -> ZomeApiResult<PersonPayload> {
+		crate::person::get_person(person_address)
+	}
+
+	#[zome_fn("hc_public")]
 	pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
 		crate::collective::create_collective(collective)
+	}
+
+	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
+	#[zome_fn("hc_public")]
+	pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePayload> {
+		crate::collective::get_collective(collective_address)
 	}
 
 	#[zome_fn("hc_public")]
@@ -88,12 +111,6 @@ mod cogov {
 	#[zome_fn("hc_public")]
 	pub fn get_actions(collective_address: Address) -> ZomeApiResult<ActionsPayload> {
 		crate::action::get_actions(collective_address)
-	}
-
-	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
-	#[zome_fn("hc_public")]
-	pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePayload> {
-		crate::collective::get_collective(collective_address)
 	}
 
 	#[zome_fn("hc_public")]
