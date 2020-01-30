@@ -63,6 +63,12 @@ impl fmt::Display for CollectivePersonTag {
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub struct CollectiveCreatorPayload {
+	pub collective_address: Address,
+	pub collective_creator: Person,
+}
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CollectivePeoplePayload {
 	pub collective_address: Address,
 	pub collective_people: Vec<Person>,
@@ -170,6 +176,19 @@ pub fn set_collective_total_shares(collective_address: Address, total_shares: i6
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
+	})
+}
+
+pub fn get_collective_creator(collective_address: Address) -> ZomeApiResult<CollectiveCreatorPayload> {
+	let mut collective_creators =
+		hdk::utils::get_links_and_load_type(
+			&collective_address,
+			LinkMatch::Exactly("collective_person"),
+			LinkMatch::Exactly(&CollectivePersonTag::Creator.to_string()),
+		)?;
+	Ok(CollectiveCreatorPayload {
+		collective_address,
+		collective_creator: collective_creators.remove(0),
 	})
 }
 
