@@ -22,6 +22,7 @@ pub struct Action {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub enum ActionOp {
 	CreateCollective,
+	AddCollectivePerson,
 	SetCollectiveName,
 	SetCollectiveTotalShares,
 }
@@ -45,16 +46,18 @@ pub struct ActionsPayload {
 	pub actions: Vec<Action>,
 }
 
+pub type ActionEntry = (Address, Entry, Action);
+
 pub trait RootAction {
-	fn commit_action(self, collective_address: Address) -> ZomeApiResult<(Address, Entry, Action)>;
+	fn commit_action(self, collective_address: Address) -> ZomeApiResult<ActionEntry>;
 }
 
 pub trait ChildAction {
-	fn commit_action(self, collective_address: Address, parent_action_address: Address) -> ZomeApiResult<(Address, Entry, Action)>;
+	fn commit_action(self, collective_address: Address, parent_action_address: Address) -> ZomeApiResult<ActionEntry>;
 }
 
 impl RootAction for Action {
-	fn commit_action(self, collective_address: Address) -> ZomeApiResult<(Address, Entry, Action)> {
+	fn commit_action(self, collective_address: Address) -> ZomeApiResult<ActionEntry> {
 		let action_entry = Entry::App("action".into(), self.borrow().into());
 		let action_address = hdk::commit_entry(&action_entry)?;
 		hdk::link_entries(
@@ -68,7 +71,7 @@ impl RootAction for Action {
 }
 
 impl ChildAction for Action {
-	fn commit_action(self, collective_address: Address, parent_action_address: Address) -> ZomeApiResult<(Address, Entry, Action)> {
+	fn commit_action(self, collective_address: Address, parent_action_address: Address) -> ZomeApiResult<ActionEntry> {
 		let action_entry = Entry::App("action".into(), self.borrow().into());
 		let action_address = hdk::commit_entry(&action_entry)?;
 		hdk::link_entries(

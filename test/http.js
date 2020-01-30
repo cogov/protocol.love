@@ -21,6 +21,7 @@ async function main() {
 					_create_collective_action(collective),
 					_set_collective_name_action(collective.name),
 					_set_total_shares_action(collective.total_shares),
+					_add_collective_person_action(person_address),
 				]
 			}
 		})
@@ -46,6 +47,7 @@ async function main() {
 					_create_collective_action(collective),
 					_set_collective_name_action(collective.name),
 					_set_total_shares_action(collective.total_shares),
+					_add_collective_person_action(person_address),
 					_set_collective_name_action(collective__renamed.name),
 				]
 			}
@@ -72,6 +74,7 @@ async function main() {
 					_create_collective_action(collective),
 					_set_collective_name_action(collective.name),
 					_set_total_shares_action(collective.total_shares),
+					_add_collective_person_action(person_address),
 					_set_collective_name_action(collective__total_shares.name),
 					_set_total_shares_action(collective__total_shares.total_shares),
 				]
@@ -336,6 +339,15 @@ function _set_total_shares_action(total_shares) {
 		status: 'Executed',
 		data: JSON.stringify({ total_shares }),
 		tag: 'set_collective_total_shares',
+		action_intent: 'SystemAutomatic'
+	}
+}
+function _add_collective_person_action(person_address) {
+	return {
+		op: 'AddCollectivePerson',
+		status: 'Executed',
+		data: JSON.stringify({ person_address }),
+		tag: 'add_collective_person',
 		action_intent: 'SystemAutomatic'
 	}
 }

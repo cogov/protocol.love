@@ -8,7 +8,7 @@ use crate::ledger::create_collective_ledger;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
 use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
-use crate::action::{Action, ActionStatus, ActionIntent, ActionOp};
+use crate::action::{Action, ActionStatus, ActionIntent, ActionOp, ActionEntry};
 use crate::utils::get_as_type_ref;
 use crate::person::Person;
 use holochain_wasm_utils::holochain_core_types::link::LinkMatch;
@@ -125,16 +125,11 @@ pub fn create_collective(collective_params: CollectiveParams) -> ZomeApiResult<C
 	let person_address = collective_params.person_address.clone();
 	let CommitCollectiveResponse(collective_address, _collective_entry, collective) =
 		commit_collective(collective_params.into())?;
-	hdk::link_entries(
-		&collective_address,
-		&person_address,
-		"collective_person",
-		&CollectivePersonTag::Creator.to_string(),
-	)?;
-	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	create_create_collective_action(&collective_address, &collective)?;
+	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	create_set_collective_name_action(&collective_address, &collective.name)?;
 	create_set_collective_total_shares_action(&collective_address, collective.total_shares)?;
+	add_collective_person(&collective_address, &person_address)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -218,7 +213,7 @@ fn commit_collective(collective: Collective) -> ZomeApiResult<CommitCollectiveRe
 	Ok(CommitCollectiveResponse(collective_address, collective_entry, collective))
 }
 
-fn create_create_collective_action(collective_address: &Address, collective: &Collective) -> ZomeApiResult<(Address, Entry, Action)> {
+fn create_create_collective_action(collective_address: &Address, collective: &Collective) -> ZomeApiResult<ActionEntry> {
 	create_collective_action(
 		collective_address,
 		ActionOp::CreateCollective,
@@ -228,12 +223,43 @@ fn create_create_collective_action(collective_address: &Address, collective: &Co
 	)
 }
 
+fn add_collective_person(
+	collective_address: &Address,
+	person_address: &Address,
+) -> ZomeApiResult<Address> {
+	let link_address = hdk::link_entries(
+		collective_address,
+		person_address,
+		"collective_person",
+		&CollectivePersonTag::Creator.to_string(),
+	)?;
+	create_add_collective_person_action(collective_address, person_address)?;
+	Ok(link_address)
+}
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+struct AddCollectivePersonActionData {
+	person_address: Address,
+}
+
+fn create_add_collective_person_action(collective_address: &Address, person_address: &Address) -> ZomeApiResult<ActionEntry> {
+	create_collective_action(
+		collective_address,
+		ActionOp::AddCollectivePerson,
+		AddCollectivePersonActionData {
+			person_address: person_address.clone(),
+		}.into(),
+		&"add_collective_person".into(),
+		ActionIntent::SystemAutomatic,
+	)
+}
+
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 struct SetCollectiveNameActionData {
 	name: String
 }
 
-fn create_set_collective_name_action(collective_address: &Address, name: &String) -> ZomeApiResult<(Address, Entry, Action)> {
+fn create_set_collective_name_action(collective_address: &Address, name: &String) -> ZomeApiResult<ActionEntry> {
 	create_collective_action(
 		collective_address,
 		ActionOp::SetCollectiveName,
@@ -250,7 +276,7 @@ struct SetTotalSharesActionData {
 	total_shares: i64,
 }
 
-fn create_set_collective_total_shares_action(collective_address: &Address, total_shares: i64) -> ZomeApiResult<(Address, Entry, Action)> {
+fn create_set_collective_total_shares_action(collective_address: &Address, total_shares: i64) -> ZomeApiResult<ActionEntry> {
 	create_collective_action(
 		collective_address,
 		ActionOp::SetCollectiveTotalShares,
@@ -268,7 +294,7 @@ fn create_collective_action(
 	data: JsonString,
 	tag: &String,
 	action_intent: ActionIntent,
-) -> ZomeApiResult<(Address, Entry, Action)> {
+) -> ZomeApiResult<ActionEntry> {
 	let collective_action = Action {
 		op,
 		status: ActionStatus::Executed,
