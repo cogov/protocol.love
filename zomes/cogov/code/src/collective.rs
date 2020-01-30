@@ -10,11 +10,15 @@ use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
 use crate::action::{Action, ActionStatus, ActionIntent, ActionOp};
 use crate::utils::get_as_type_ref;
+use crate::person::Person;
+use holochain_wasm_utils::holochain_core_types::link::LinkMatch;
+use std::fmt;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CollectiveParams {
 	pub name: String,
 	pub total_shares: i64,
+	pub person_address: Address,
 }
 
 impl Into<Collective> for CollectiveParams {
@@ -47,6 +51,23 @@ pub struct CollectivePayload {
 	pub collective: Collective,
 }
 
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub enum CollectivePersonTag {
+	Creator,
+}
+
+impl fmt::Display for CollectivePersonTag {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "{:?}", self)
+	}
+}
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub struct CollectivePeoplePayload {
+	pub collective_address: Address,
+	pub collective_people: Vec<Person>,
+}
+
 pub fn collective_def() -> ValidatingEntryType {
 	entry!(
 			name: "collective",
@@ -70,6 +91,16 @@ pub fn collective_def() -> ValidatingEntryType {
 					}
 				),
 				to!(
+					"person",
+					link_type: "collective_person",
+					validation_package: || {
+						hdk::ValidationPackageDefinition::Entry
+					},
+					validation: |_validation_data: hdk::LinkValidationData| {
+						Ok(())
+					}
+				),
+				to!(
 					"ledger",
 					link_type: "collective_ledger",
 					validation_package: || {
@@ -85,8 +116,15 @@ pub fn collective_def() -> ValidatingEntryType {
 
 // curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
 pub fn create_collective(collective_params: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
+	let person_address = collective_params.person_address.clone();
 	let CommitCollectiveResponse(collective_address, _collective_entry, collective) =
 		commit_collective(collective_params.into())?;
+	hdk::link_entries(
+		&collective_address,
+		&person_address,
+		"collective_person",
+		&CollectivePersonTag::Creator.to_string(),
+	)?;
 	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	create_create_collective_action(&collective_address, &collective)?;
 	create_set_collective_name_action(&collective_address, &collective.name)?;
@@ -132,6 +170,19 @@ pub fn set_collective_total_shares(collective_address: Address, total_shares: i6
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
+	})
+}
+
+pub fn get_collective_people(collective_address: Address) -> ZomeApiResult<CollectivePeoplePayload> {
+	let collective_people =
+		hdk::utils::get_links_and_load_type(
+			&collective_address,
+			LinkMatch::Exactly("collective_person"),
+			LinkMatch::Any,
+		)?;
+	Ok(CollectivePeoplePayload {
+		collective_address,
+		collective_people,
 	})
 }
 

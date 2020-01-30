@@ -10,7 +10,8 @@ async function main() {
 	test('scenario: create_person, get_person, create_collective, get_collective, set_collective_name, set_collective_total_shares', async (t) => {
 		const { person_address, person } = await assert_create_person(t)
 		await assert_get_person(t, { person_address, person })
-		const { collective_address, collective } = await assert_create_collective(t)
+		const { collective_address, collective } = await assert_create_collective(t, { person_address })
+		await assert_get_collective_people(t, { collective_address, collective_people: [person] })
 		await assert_get_collective(t, { collective_address, collective })
 		t.deepEqual(await _get_actions_result(t, collective_address), {
 			Ok: {
@@ -172,8 +173,12 @@ async function assert_create_person(t) {
 	}
 	const { person_address, person } = Ok
 	t.assert(person_address, 'person_address should be truthy')
+	const { agent_address } = person
+	t.assert(agent_address)
 	t.deepEqual(person, {
+		agent_address,
 		name: 'Jane',
+		status: 'Active',
 	})
 	return {
 		person_address,
@@ -206,11 +211,12 @@ async function assert_get_person(t, { person_address, person }, opts = {}) {
 		})
 	}
 }
-async function assert_create_collective(t) {
+async function assert_create_collective(t, { person_address }) {
 	const create_collective_result =
 		await _api_result(t, _api_params(
 			'create_collective', {
 				collective: {
+					person_address,
 					name: 'Flower of Life Collective',
 					total_shares: 500000
 				}
@@ -229,6 +235,24 @@ async function assert_create_collective(t) {
 	return {
 		collective_address,
 		collective,
+	}
+}
+async function assert_get_collective_people(t, { collective_address, collective_people }) {
+	const get_collective_people_result =
+		await _api_result(t, _api_params(
+			'get_collective_people', {
+				collective_address,
+			}
+		))
+	const { Ok } = get_collective_people_result
+	if (!Ok) {
+		t.fail(JSON.stringify(get_collective_people_result))
+	}
+	t.equal(collective_address, Ok.collective_address)
+	t.deepEqual(collective_people, Ok.collective_people)
+	return {
+		collective_address,
+		collective_people,
 	}
 }
 async function assert_get_collective(t, { collective_address, collective }, opts = {}) {

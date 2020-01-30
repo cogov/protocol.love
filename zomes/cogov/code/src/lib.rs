@@ -30,7 +30,7 @@ mod cogov {
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
 
-	use crate::collective::{CollectivePayload, CollectiveParams};
+	use crate::collective::{CollectivePayload, CollectiveParams, CollectivePeoplePayload};
 	use crate::proposal::{ProposalParams, ProposalPayload};
 	use crate::action::ActionsPayload;
 	use crate::person::{PersonParams, PersonPayload};
@@ -105,6 +105,11 @@ mod cogov {
 	#[zome_fn("hc_public")]
 	pub fn set_collective_total_shares(collective_address: Address, total_shares: i64) -> ZomeApiResult<CollectivePayload> {
 		crate::collective::set_collective_total_shares(collective_address, total_shares)
+	}
+
+	#[zome_fn("hc_public")]
+	pub fn get_collective_people(collective_address: Address) -> ZomeApiResult<CollectivePeoplePayload> {
+		crate::collective::get_collective_people(collective_address)
 	}
 
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888

@@ -14,17 +14,17 @@ pub struct PersonParams {
 	name: String,
 }
 
-impl Into<Person> for PersonParams {
-	fn into(self) -> Person {
-		Person {
-			name: self.name,
-		}
-	}
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub enum PersonStatus {
+	Active,
+	Inactive,
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Person {
-	name: String,
+	pub agent_address: Address,
+	pub name: String,
+	pub status: PersonStatus,
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -61,7 +61,11 @@ pub fn person_def() -> ValidatingEntryType {
 
 pub fn create_person(person_params: PersonParams) -> ZomeApiResult<PersonPayload> {
 	let CommitPersonResponse(person_address, _person_entry, person) =
-		commit_person(person_params.into())?;
+		commit_person(Person {
+			agent_address: hdk::AGENT_ADDRESS.clone(),
+			name: person_params.name,
+			status: PersonStatus::Active,
+		})?;
 	Ok(PersonPayload {
 		person_address,
 		person,
