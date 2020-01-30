@@ -82,54 +82,6 @@ async function main() {
 		})
 	})
 }
-async function assert_set_collective_name(t, { collective_address, collective, name }) {
-	t.notEqual(collective.name, name)
-	const api_result = await _api_result(t, _api_params(
-		'set_collective_name',
-		{
-			collective_address,
-			name,
-		}))
-	const { Ok } = api_result
-	if (!Ok) {
-		t.fail(JSON.stringify(api_result))
-	}
-	const {
-		collective_address: collective_address__result,
-		collective: collective__result,
-	} = Ok
-	t.deepEqual(
-		clone(collective, { name }),
-		collective__result)
-	return {
-		collective_address,
-		collective: collective__result,
-	}
-}
-async function assert_set_collective_total_shares(t, { collective_address, collective, total_shares }) {
-	t.notEqual(collective.total_shares, total_shares)
-	const api_result = await _api_result(t, _api_params(
-		'set_collective_total_shares',
-		{
-			collective_address,
-			total_shares,
-		}))
-	const { Ok } = api_result
-	if (!Ok) {
-		t.fail(JSON.stringify(api_result))
-	}
-	const {
-		collective_address: collective_address__result,
-		collective: collective__result,
-	} = Ok
-	t.deepEqual(
-		collective__result,
-		clone(collective, { total_shares }))
-	return {
-		collective_address,
-		collective: collective__result,
-	}
-}
 async function _api_result(t, params) {
 	const response = await post_api(params)
 	const json = await response.json()
@@ -305,6 +257,54 @@ async function assert_get_collective(t, { collective_address, collective }, opts
 			collective_address,
 			collective,
 		})
+	}
+}
+async function assert_set_collective_name(t, { collective_address, collective, name }) {
+	t.notEqual(collective.name, name)
+	const api_result = await _api_result(t, _api_params(
+		'set_collective_name',
+		{
+			collective_address,
+			name,
+		}))
+	const { Ok } = api_result
+	if (!Ok) {
+		t.fail(JSON.stringify(api_result))
+	}
+	const {
+		collective_address: collective_address__result,
+		collective: collective__result,
+	} = Ok
+	t.deepEqual(
+		clone(collective, { name }),
+		collective__result)
+	return {
+		collective_address,
+		collective: collective__result,
+	}
+}
+async function assert_set_collective_total_shares(t, { collective_address, collective, total_shares }) {
+	t.notEqual(collective.total_shares, total_shares)
+	const api_result = await _api_result(t, _api_params(
+		'set_collective_total_shares',
+		{
+			collective_address,
+			total_shares,
+		}))
+	const { Ok } = api_result
+	if (!Ok) {
+		t.fail(JSON.stringify(api_result))
+	}
+	const {
+		collective_address: collective_address__result,
+		collective: collective__result,
+	} = Ok
+	t.deepEqual(
+		collective__result,
+		clone(collective, { total_shares }))
+	return {
+		collective_address,
+		collective: collective__result,
 	}
 }
 function _get_actions_result(t, collective_address) {
