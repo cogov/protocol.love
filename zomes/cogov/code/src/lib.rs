@@ -103,11 +103,6 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn set_collective_total_shares(collective_address: Address, total_shares: i64) -> ZomeApiResult<CollectivePayload> {
-		crate::collective::set_collective_total_shares(collective_address, total_shares)
-	}
-
-	#[zome_fn("hc_public")]
 	pub fn get_collective_creator(collective_address: Address) -> ZomeApiResult<CollectiveCreatorPayload> {
 		crate::collective::get_collective_creator(collective_address)
 	}

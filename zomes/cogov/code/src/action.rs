@@ -24,7 +24,6 @@ pub enum ActionOp {
 	CreateCollective,
 	AddCollectivePerson,
 	SetCollectiveName,
-	SetCollectiveTotalShares,
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]

@@ -7,7 +7,7 @@ const assign = Object.assign
 const clone = (...arg_a1) => assign({}, ...arg_a1)
 main()
 async function main() {
-	test('scenario: create_person, get_person, create_collective, get_collective, set_collective_name, set_collective_total_shares', async (t) => {
+	test('scenario: create_person, get_person, create_collective, get_collective, set_collective_name', async (t) => {
 		const { person_address, person } = await assert_create_person(t)
 		await assert_get_person(t, { person_address, person })
 		const { collective_address, collective } = await assert_create_collective(t, { person_address })
@@ -20,7 +20,6 @@ async function main() {
 				actions: [
 					_create_collective_action(collective),
 					_set_collective_name_action(collective.name),
-					_set_total_shares_action(collective.total_shares),
 					_add_collective_person_action(person_address),
 				]
 			}
@@ -46,37 +45,8 @@ async function main() {
 				actions: [
 					_create_collective_action(collective),
 					_set_collective_name_action(collective.name),
-					_set_total_shares_action(collective.total_shares),
 					_add_collective_person_action(person_address),
 					_set_collective_name_action(collective__renamed.name),
-				]
-			}
-		})
-		const {
-			collective: collective__total_shares,
-			collective_address: collective_address__total_shares
-		} =
-			await assert_set_collective_total_shares(t, {
-				collective_address,
-				collective: collective__renamed,
-				total_shares: 750000
-			})
-		t.equal(collective_address, collective_address__total_shares)
-		t.notEqual(collective.total_shares, collective__total_shares.total_shares)
-		await assert_get_collective(t, {
-			collective_address: collective_address__total_shares,
-			collective: collective__total_shares
-		}, { timeout_ms: 5000 })
-		t.deepEqual(await _get_actions_result(t, collective_address), {
-			Ok: {
-				collective_address: collective_address,
-				actions: [
-					_create_collective_action(collective),
-					_set_collective_name_action(collective.name),
-					_set_total_shares_action(collective.total_shares),
-					_add_collective_person_action(person_address),
-					_set_collective_name_action(collective__total_shares.name),
-					_set_total_shares_action(collective__total_shares.total_shares),
 				]
 			}
 		})
@@ -174,7 +144,6 @@ async function assert_create_collective(t, { person_address }) {
 				collective: {
 					person_address,
 					name: 'Flower of Life Collective',
-					total_shares: 500000
 				}
 			}
 		))
@@ -186,7 +155,6 @@ async function assert_create_collective(t, { person_address }) {
 	t.assert(collective_address, 'collective_address should be truthy')
 	t.deepEqual(collective, {
 		name: 'Flower of Life Collective',
-		total_shares: 500000
 	})
 	return {
 		collective_address,
@@ -283,30 +251,6 @@ async function assert_set_collective_name(t, { collective_address, collective, n
 		collective: collective__result,
 	}
 }
-async function assert_set_collective_total_shares(t, { collective_address, collective, total_shares }) {
-	t.notEqual(collective.total_shares, total_shares)
-	const api_result = await _api_result(t, _api_params(
-		'set_collective_total_shares',
-		{
-			collective_address,
-			total_shares,
-		}))
-	const { Ok } = api_result
-	if (!Ok) {
-		t.fail(JSON.stringify(api_result))
-	}
-	const {
-		collective_address: collective_address__result,
-		collective: collective__result,
-	} = Ok
-	t.deepEqual(
-		collective__result,
-		clone(collective, { total_shares }))
-	return {
-		collective_address,
-		collective: collective__result,
-	}
-}
 function _get_actions_result(t, collective_address) {
 	return _api_result(t, _api_params(
 		'get_actions',
@@ -330,15 +274,6 @@ function _set_collective_name_action(name) {
 		status: 'Executed',
 		data: JSON.stringify({ name }),
 		tag: 'set_collective_name',
-		action_intent: 'SystemAutomatic'
-	}
-}
-function _set_total_shares_action(total_shares) {
-	return {
-		op: 'SetCollectiveTotalShares',
-		status: 'Executed',
-		data: JSON.stringify({ total_shares }),
-		tag: 'set_collective_total_shares',
 		action_intent: 'SystemAutomatic'
 	}
 }

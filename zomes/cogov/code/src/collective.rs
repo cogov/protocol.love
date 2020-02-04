@@ -17,7 +17,6 @@ use std::fmt;
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CollectiveParams {
 	pub name: String,
-	pub total_shares: i64,
 	pub person_address: Address,
 }
 
@@ -25,7 +24,6 @@ impl Into<Collective> for CollectiveParams {
 	fn into(self) -> Collective {
 		Collective {
 			name: self.name,
-			total_shares: self.total_shares,
 		}
 	}
 }
@@ -33,14 +31,12 @@ impl Into<Collective> for CollectiveParams {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Collective {
 	pub name: String,
-	pub total_shares: i64,
 }
 
 impl Default for Collective {
 	fn default() -> Self {
 		Collective {
 			name: "unnamed collective".to_string(),
-			total_shares: 100000,
 		}
 	}
 }
@@ -128,7 +124,6 @@ pub fn create_collective(collective_params: CollectiveParams) -> ZomeApiResult<C
 	create_create_collective_action(&collective_address, &collective)?;
 	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	create_set_collective_name_action(&collective_address, &collective.name)?;
-	create_set_collective_total_shares_action(&collective_address, collective.total_shares)?;
 	add_collective_person(&collective_address, &person_address)?;
 	Ok(CollectivePayload {
 		collective_address,
@@ -154,20 +149,6 @@ pub fn set_collective_name(collective_address: Address, name: String) -> ZomeApi
 	};
 	update_collective(&collective_address, &collective)?;
 	create_set_collective_name_action(&collective_address, &collective.name)?;
-	Ok(CollectivePayload {
-		collective_address,
-		collective,
-	})
-}
-
-pub fn set_collective_total_shares(collective_address: Address, total_shares: i64) -> ZomeApiResult<CollectivePayload> {
-	let saved_collective = get_as_type_ref(&collective_address)?;
-	let collective = Collective {
-		total_shares,
-		..saved_collective
-	};
-	update_collective(&collective_address, &collective)?;
-	create_set_collective_total_shares_action(&collective_address, collective.total_shares)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -274,18 +255,6 @@ fn create_set_collective_name_action(collective_address: &Address, name: &String
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 struct SetTotalSharesActionData {
 	total_shares: i64,
-}
-
-fn create_set_collective_total_shares_action(collective_address: &Address, total_shares: i64) -> ZomeApiResult<ActionEntry> {
-	create_collective_action(
-		collective_address,
-		ActionOp::SetCollectiveTotalShares,
-		SetTotalSharesActionData {
-			total_shares
-		}.into(),
-		&"set_collective_total_shares".into(),
-		ActionIntent::SystemAutomatic,
-	)
 }
 
 fn create_collective_action(
