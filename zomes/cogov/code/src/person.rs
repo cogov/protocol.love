@@ -1,5 +1,6 @@
 use std::prelude::v1::Into;
 use std::borrow::Borrow;
+use hdk::{EntryValidationData};
 use hdk::holochain_core_types::dna::entry_types::Sharing;
 use hdk::holochain_json_api::{
 	json::JsonString,
@@ -41,8 +42,29 @@ pub fn person_def() -> ValidatingEntryType {
 		validation_package: || {
 			hdk::ValidationPackageDefinition::Entry
 		},
-		validation: | _validation_data: hdk::EntryValidationData<Person>| {
-			Ok(())
+		validation: | validation_data: hdk::EntryValidationData<Person>| {
+			match validation_data{
+				EntryValidationData::Create { entry, validation_data } => {
+					if !validation_data.sources().contains(&entry.agent_address) {
+						return Err(String::from("Person representing agent must be created created by agent"));
+					}
+					validate_name(&entry.name)?;
+					Ok(())
+				}
+				EntryValidationData::Modify { new_entry, old_entry, validation_data, .. } => {
+					if new_entry.agent_address != old_entry.agent_address {
+						return Err(String::from("agent_address cannot be updated"));
+					}
+					if !validation_data.sources().contains(&old_entry.agent_address) {
+						return Err(String::from("Person can only update by oneself"));
+					}
+					validate_name(&new_entry.name)?;
+					Ok(())
+				}
+				EntryValidationData::Delete { .. } => {
+					return Err(String::from("Person cannot be deleted"));
+				}
+			}
 		},
 		links: [
 			to!(
@@ -57,6 +79,14 @@ pub fn person_def() -> ValidatingEntryType {
 			)
 		]
 	)
+}
+
+fn validate_name(name: &str) -> Result<(), String> {
+	if name.len() > 64 {
+		Err("Name is too long".into())
+	} else {
+		Ok(())
+	}
 }
 
 pub fn create_person(person_params: PersonParams) -> ZomeApiResult<PersonPayload> {

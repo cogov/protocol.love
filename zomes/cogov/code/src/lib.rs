@@ -30,7 +30,7 @@ mod cogov {
 	};
 	use hdk::prelude::{ValidatingEntryType, ZomeApiResult};
 
-	use crate::collective::{CollectivePayload, CollectiveParams, CollectiveCreatorPayload, CollectivePeoplePayload};
+	use crate::collective::{CollectivePayload, CreateCollectiveParams, CollectivePeoplePayload};
 	use crate::proposal::{ProposalParams, ProposalPayload};
 	use crate::action::ActionsPayload;
 	use crate::person::{PersonParams, PersonPayload};
@@ -87,7 +87,7 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn create_collective(collective: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
+	pub fn create_collective(collective: CreateCollectiveParams) -> ZomeApiResult<CollectivePayload> {
 		crate::collective::create_collective(collective)
 	}
 
@@ -100,11 +100,6 @@ mod cogov {
 	#[zome_fn("hc_public")]
 	pub fn set_collective_name(collective_address: Address, name: String) -> ZomeApiResult<CollectivePayload> {
 		crate::collective::set_collective_name(collective_address, name)
-	}
-
-	#[zome_fn("hc_public")]
-	pub fn get_collective_creator(collective_address: Address) -> ZomeApiResult<CollectiveCreatorPayload> {
-		crate::collective::get_collective_creator(collective_address)
 	}
 
 	#[zome_fn("hc_public")]

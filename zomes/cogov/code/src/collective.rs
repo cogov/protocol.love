@@ -1,4 +1,5 @@
 use std::borrow::Borrow;
+use hdk::EntryValidationData;
 use hdk::holochain_core_types::dna::entry_types::Sharing;
 use hdk::holochain_json_api::{
 	json::JsonString,
@@ -15,28 +16,31 @@ use holochain_wasm_utils::holochain_core_types::link::LinkMatch;
 use std::fmt;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-pub struct CollectiveParams {
+pub struct Collective {
 	pub name: String,
-	pub person_address: Address,
-}
-
-impl Into<Collective> for CollectiveParams {
-	fn into(self) -> Collective {
-		Collective {
-			name: self.name,
-		}
-	}
+	pub admin_address: Option<Address>,
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-pub struct Collective {
+pub struct CreateCollectiveParams {
 	pub name: String,
+	pub admin_address: Address,
+}
+
+impl Into<Collective> for CreateCollectiveParams {
+	fn into(self) -> Collective {
+		Collective {
+			name: self.name,
+			admin_address: Some(self.admin_address),
+		}
+	}
 }
 
 impl Default for Collective {
 	fn default() -> Self {
 		Collective {
 			name: "unnamed collective".to_string(),
+			admin_address: Default::default(),
 		}
 	}
 }
@@ -59,12 +63,6 @@ impl fmt::Display for CollectivePersonTag {
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-pub struct CollectiveCreatorPayload {
-	pub collective_address: Address,
-	pub collective_creator: Person,
-}
-
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CollectivePeoplePayload {
 	pub collective_address: Address,
 	pub collective_people: Vec<Person>,
@@ -78,8 +76,43 @@ pub fn collective_def() -> ValidatingEntryType {
 		validation_package: || {
 			hdk::ValidationPackageDefinition::Entry
 		},
-		validation: | _validation_data: hdk::EntryValidationData<Collective>| {
-			Ok(())
+		validation: | validation_data: hdk::EntryValidationData<Collective>| {
+			match validation_data{
+				EntryValidationData::Create { entry, validation_data } => {
+					match entry.admin_address {
+						Some(admin_address) => {
+							let admin:Person = hdk::utils::get_as_type(admin_address)?;
+							if !validation_data.sources().contains(&admin.agent_address) {
+								return Err("Collective must be created with same agent as the given person".into());
+							}
+						},
+						None => {
+							return Err("Collective being created must have an admin".into())
+						}
+					}
+					Ok(())
+				}
+				EntryValidationData::Modify { old_entry, validation_data, .. } => {
+					let admin_address = old_entry.admin_address;
+					match admin_address {
+						Some(admin_address) => {
+							let admin:Person = hdk::utils::get_as_type(admin_address)?;
+							if !validation_data.sources().contains(&admin.agent_address) {
+								return Err(String::from("Collective can only be modified by the admin"));
+							};
+						},
+						None => {
+							// TODO: Logic for a Proposal to update this collective
+							return Err("Collective can only be modified with an executed proposal".into());
+						}
+					}
+
+					Ok(())
+				}
+				EntryValidationData::Delete { .. } => {
+					return Err("Collective cannot be deleted".into());
+				}
+			}
 		},
 		links: [
 			to!(
@@ -117,14 +150,14 @@ pub fn collective_def() -> ValidatingEntryType {
 }
 
 // curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
-pub fn create_collective(collective_params: CollectiveParams) -> ZomeApiResult<CollectivePayload> {
-	let person_address = collective_params.person_address.clone();
+pub fn create_collective(collective_params: CreateCollectiveParams) -> ZomeApiResult<CollectivePayload> {
+	let admin_address = collective_params.admin_address.clone();
 	let CommitCollectiveResponse(collective_address, _collective_entry, collective) =
 		commit_collective(collective_params.into())?;
 	create_create_collective_action(&collective_address, &collective)?;
 	create_collective_ledger(&collective.borrow(), &collective_address)?;
 	create_set_collective_name_action(&collective_address, &collective.name)?;
-	add_collective_person(&collective_address, &person_address)?;
+	add_collective_person(&collective_address, &admin_address)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -152,19 +185,6 @@ pub fn set_collective_name(collective_address: Address, name: String) -> ZomeApi
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
-	})
-}
-
-pub fn get_collective_creator(collective_address: Address) -> ZomeApiResult<CollectiveCreatorPayload> {
-	let mut collective_creators =
-		hdk::utils::get_links_and_load_type(
-			&collective_address,
-			LinkMatch::Exactly("collective_person"),
-			LinkMatch::Exactly(&CollectivePersonTag::Creator.to_string()),
-		)?;
-	Ok(CollectiveCreatorPayload {
-		collective_address,
-		collective_creator: collective_creators.remove(0),
 	})
 }
 
