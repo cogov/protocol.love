@@ -91,38 +91,38 @@ impl ChildAction for Action {
 
 pub fn action_def() -> ValidatingEntryType {
 	entry!(
-			name: "action",
-			description: "A cogov collective action",
-			sharing: Sharing::Public,
-			validation_package: || {
-				hdk::ValidationPackageDefinition::Entry
-			},
-			validation: | _validation_data: hdk::EntryValidationData<Action>| {
-				Ok(())
-			},
-			links: [
-				from!(
-					"collective",
-					link_type: "action_collective",
-					validation_package: || {
-						hdk::ValidationPackageDefinition::Entry
-					},
-					validation: |_validation_data: hdk::LinkValidationData| {
-						Ok(())
-					}
-				),
-				to!(
-					"action",
-					link_type: "child_action",
-					validation_package: || {
-						hdk::ValidationPackageDefinition::Entry
-					},
-					validation: |_validation_data: hdk::LinkValidationData| {
-						Ok(())
-					}
-				)
-			]
-    )
+		name: "action",
+		description: "A cogov collective action",
+		sharing: Sharing::Public,
+		validation_package: || {
+			hdk::ValidationPackageDefinition::Entry
+		},
+		validation: | _validation_data: hdk::EntryValidationData<Action>| {
+			Ok(())
+		},
+		links: [
+			from!(
+				"collective",
+				link_type: "action_collective",
+				validation_package: || {
+					hdk::ValidationPackageDefinition::Entry
+				},
+				validation: |_validation_data: hdk::LinkValidationData| {
+					Ok(())
+				}
+			),
+			to!(
+				"action",
+				link_type: "child_action",
+				validation_package: || {
+					hdk::ValidationPackageDefinition::Entry
+				},
+				validation: |_validation_data: hdk::LinkValidationData| {
+					Ok(())
+				}
+			)
+		]
+	)
 }
 
 // curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888

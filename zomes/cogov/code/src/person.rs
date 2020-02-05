@@ -35,28 +35,28 @@ pub struct PersonPayload {
 
 pub fn person_def() -> ValidatingEntryType {
 	entry!(
-			name: "person",
-			description: "A cogov person",
-			sharing: Sharing::Public,
-			validation_package: || {
-				hdk::ValidationPackageDefinition::Entry
-			},
-			validation: | _validation_data: hdk::EntryValidationData<Person>| {
-				Ok(())
-			},
-			links: [
-				to!(
-					"collective",
-					link_type: "person_collective",
-					validation_package: || {
-						hdk::ValidationPackageDefinition::Entry
-					},
-					validation: |_validation_data: hdk::LinkValidationData| {
-						Ok(())
-					}
-				)
-			]
-    )
+		name: "person",
+		description: "A cogov person",
+		sharing: Sharing::Public,
+		validation_package: || {
+			hdk::ValidationPackageDefinition::Entry
+		},
+		validation: | _validation_data: hdk::EntryValidationData<Person>| {
+			Ok(())
+		},
+		links: [
+			to!(
+				"collective",
+				link_type: "person_collective",
+				validation_package: || {
+					hdk::ValidationPackageDefinition::Entry
+				},
+				validation: |_validation_data: hdk::LinkValidationData| {
+					Ok(())
+				}
+			)
+		]
+	)
 }
 
 pub fn create_person(person_params: PersonParams) -> ZomeApiResult<PersonPayload> {

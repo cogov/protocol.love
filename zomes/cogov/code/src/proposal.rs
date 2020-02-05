@@ -38,16 +38,16 @@ pub struct ProposalPayload {
 
 pub fn proposal_def() -> ValidatingEntryType {
 	entry!(
-			name: "proposal",
-			description: "A pro",
-			sharing: Sharing::Public,
-			validation_package: || {
-				hdk::ValidationPackageDefinition::Entry
-			},
-			validation: | _validation_data: hdk::EntryValidationData<Proposal>| {
-				Ok(())
-			}
-		)
+		name: "proposal",
+		description: "A pro",
+		sharing: Sharing::Public,
+		validation_package: || {
+			hdk::ValidationPackageDefinition::Entry
+		},
+		validation: | _validation_data: hdk::EntryValidationData<Proposal>| {
+			Ok(())
+		}
+	)
 }
 
 pub fn create_proposal(proposal_params: ProposalParams) -> ZomeApiResult<ProposalPayload> {
