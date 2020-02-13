@@ -10,8 +10,10 @@ async function main() {
 	test('scenario: create_person, get_person, create_collective, get_collective, set_collective_name', async (t) => {
 		const { person_address, person } = await assert_create_person(t)
 		await assert_get_person(t, { person_address, person })
-		const { collective_address, collective } = await assert_create_collective(t, { admin_address: person_address })
-		await assert_get_collective_people(t, { collective_address, collective_people: [person] })
+		const { collective_address, collective } =
+			await assert_create_collective(t, { admin_address: person_address })
+		await assert_get_collective_people(t,
+			{ collective_address, collective_people: [person] })
 		await assert_get_collective(t, { collective_address, collective })
 		t.deepEqual(await _get_actions_result(t, collective_address), {
 			Ok: {

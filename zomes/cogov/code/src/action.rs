@@ -127,11 +127,12 @@ pub fn action_def() -> ValidatingEntryType {
 
 // curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 pub fn get_actions(collective_address: Address) -> ZomeApiResult<ActionsPayload> {
-	let actions = hdk::utils::get_links_and_load_type(
+	let mut actions = hdk::utils::get_links_and_load_type(
 		&collective_address,
 		LinkMatch::Exactly("collective_action"),
 		LinkMatch::Any,
 	)?;
+	actions.reverse();
 	Ok(ActionsPayload {
 		collective_address,
 		actions,
