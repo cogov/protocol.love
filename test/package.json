@@ -5,11 +5,7 @@
 		"json3": "*",
 		"node-fetch": "^2.6.0",
 		"sleep": "^6.1.0",
-		"tape": "^4.12.1",
+		"tape": "^4.13.0",
 		"tape-async": "^2.3.0"
-	},
-	"devDependencies": {
-		"@types/node": "^13.1.4",
-		"typescript": "^3.7.4"
 	}
 }
