@@ -16,7 +16,7 @@ pub struct Action {
 	pub status: ActionStatus,
 	pub data: JsonString,
 	pub tag: String,
-	pub action_intent: ActionIntent,
+	pub strategy: ActionStrategy,
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -33,7 +33,7 @@ pub enum ActionStatus {
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-pub enum ActionIntent {
+pub enum ActionStrategy {
 	SystemAutomatic,
 	PrivilegedAction,
 	NewDiscussionMessage,

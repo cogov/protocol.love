@@ -9,7 +9,7 @@ use crate::ledger::create_collective_ledger;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
 use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
-use crate::action::{Action, ActionStatus, ActionIntent, ActionOp, ActionEntry};
+use crate::action::{Action, ActionStatus, ActionStrategy, ActionOp, ActionEntry};
 use crate::utils::get_as_type_ref;
 use crate::person::Person;
 use holochain_wasm_utils::holochain_core_types::link::LinkMatch;
@@ -220,7 +220,7 @@ fn create_create_collective_action(collective_address: &Address, collective: &Co
 		ActionOp::CreateCollective,
 		collective.into(),
 		&"create_collective".into(),
-		ActionIntent::SystemAutomatic,
+		ActionStrategy::SystemAutomatic,
 	)
 }
 
@@ -251,7 +251,7 @@ fn create_add_collective_person_action(collective_address: &Address, person_addr
 			person_address: person_address.clone(),
 		}.into(),
 		&"add_collective_person".into(),
-		ActionIntent::SystemAutomatic,
+		ActionStrategy::SystemAutomatic,
 	)
 }
 
@@ -268,7 +268,7 @@ fn create_set_collective_name_action(collective_address: &Address, name: &String
 			name: name.clone()
 		}.into(),
 		&"set_collective_name".into(),
-		ActionIntent::SystemAutomatic,
+		ActionStrategy::SystemAutomatic,
 	)
 }
 
@@ -282,14 +282,14 @@ fn create_collective_action(
 	op: ActionOp,
 	data: JsonString,
 	tag: &String,
-	action_intent: ActionIntent,
+	strategy: ActionStrategy,
 ) -> ZomeApiResult<ActionEntry> {
 	let collective_action = Action {
 		op,
 		status: ActionStatus::Executed,
 		data: data.into(),
 		tag: tag.into(),
-		action_intent: action_intent.into(),
+		strategy: strategy.into(),
 	};
 	let action_entry = Entry::App(
 		"action".into(),

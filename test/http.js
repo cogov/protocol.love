@@ -247,7 +247,7 @@ function _create_collective_action(collective) {
 		status: 'Executed',
 		data: JSON.stringify(collective),
 		tag: 'create_collective',
-		action_intent: 'SystemAutomatic'
+		strategy: 'SystemAutomatic'
 	}
 }
 function _set_collective_name_action(name) {
@@ -256,7 +256,7 @@ function _set_collective_name_action(name) {
 		status: 'Executed',
 		data: JSON.stringify({ name }),
 		tag: 'set_collective_name',
-		action_intent: 'SystemAutomatic'
+		strategy: 'SystemAutomatic'
 	}
 }
 function _add_collective_person_action(person_address) {
@@ -265,7 +265,7 @@ function _add_collective_person_action(person_address) {
 		status: 'Executed',
 		data: JSON.stringify({ person_address }),
 		tag: 'add_collective_person',
-		action_intent: 'SystemAutomatic'
+		strategy: 'SystemAutomatic'
 	}
 }
 async function wait_for(afn, timeout_ms = 5000, sleep_ms = 100) {
