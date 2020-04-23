@@ -1,6 +1,6 @@
 #!/bin/sh
 while :; do
-  nix-shell --run "hc run -i http" https://github.com/holochain/holonix/archive/develop.tar.gz
+  nix-shell --run "hc run -i http" https://holochain.love
   CODE=$?
   if [ $CODE != 129 ]; then
     echo "Exit with code: $CODE"
