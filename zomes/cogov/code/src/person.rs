@@ -9,10 +9,46 @@ use hdk::holochain_json_api::{
 use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_persistence_api::cas::content::Address;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
+use crate::utils::{match_tag_error};
+
+#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+pub struct PersonParamsTZome {
+	pub name: String,
+	pub agent_address: Option<Address>,
+	pub status: Option<PersonStatus>,
+}
+
+impl Into<PersonParams> for PersonParamsTZome {
+	fn into(self) -> PersonParams {
+		PersonParams {
+			name: self.name,
+			agent_address: match self.agent_address {
+				Some(agent_address) => agent_address,
+				None => PersonParams::default().agent_address,
+			},
+			status: match self.status {
+				Some(status) => status,
+				None => PersonParams::default().status,
+			},
+		}
+	}
+}
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct PersonParams {
-	name: String,
+	pub name: String,
+	pub agent_address: Address,
+	pub status: PersonStatus,
+}
+
+impl Default for PersonParams {
+	fn default() -> Self {
+		PersonParams {
+			name: "".to_string(),
+			agent_address: hdk::AGENT_ADDRESS.clone(),
+			status: PersonStatus::Active,
+		}
+	}
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -26,6 +62,16 @@ pub struct Person {
 	pub agent_address: Address,
 	pub name: String,
 	pub status: PersonStatus,
+}
+
+impl Default for Person {
+	fn default() -> Self {
+		Person {
+			agent_address: hdk::AGENT_ADDRESS.clone(),
+			name: "".to_string(),
+			status: PersonStatus::Active,
+		}
+	}
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -46,7 +92,9 @@ pub fn person_def() -> ValidatingEntryType {
 			match validation_data{
 				EntryValidationData::Create { entry, validation_data } => {
 					if !validation_data.sources().contains(&entry.agent_address) {
-						return Err(String::from("Person representing agent must be created created by agent"));
+						return Err(
+							String::from("Person representing agent must be created by agent")
+						);
 					}
 					validate_name(&entry.name)?;
 					Ok(())
@@ -90,12 +138,19 @@ fn validate_name(name: &str) -> Result<(), String> {
 }
 
 pub fn create_person(person_params: PersonParams) -> ZomeApiResult<PersonPayload> {
-	let CommitPersonResponse(person_address, _person_entry, person) =
-		commit_person(Person {
-			agent_address: hdk::AGENT_ADDRESS.clone(),
-			name: person_params.name,
-			status: PersonStatus::Active,
-		})?;
+	let CommitPersonResponse(
+		person_address,
+		_person_entry,
+		person,
+	) =
+		match_tag_error(
+			commit_person(Person {
+				name: person_params.name,
+				agent_address: person_params.agent_address,
+				status: person_params.status,
+			}),
+			"create_person: "
+		)?;
 	Ok(PersonPayload {
 		person_address,
 		person,

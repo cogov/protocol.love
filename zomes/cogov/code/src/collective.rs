@@ -10,8 +10,8 @@ use holochain_wasm_utils::holochain_core_types::entry::Entry;
 use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
 use crate::action::{Action, ActionStatus, ActionStrategy, ActionOp, ActionEntry};
-use crate::utils::get_as_type_ref;
-use crate::person::Person;
+use crate::utils::{get_as_type_ref, match_tag_error};
+use crate::person::{Person, create_person, PersonParams, PersonPayload};
 use holochain_wasm_utils::holochain_core_types::link::LinkMatch;
 use std::fmt;
 
@@ -24,14 +24,14 @@ pub struct Collective {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CreateCollectiveParams {
 	pub name: String,
-	pub admin_address: Address,
+	pub admin_address: Option<Address>,
 }
 
 impl Into<Collective> for CreateCollectiveParams {
 	fn into(self) -> Collective {
 		Collective {
 			name: self.name,
-			admin_address: Some(self.admin_address),
+			admin_address: self.admin_address,
 		}
 	}
 }
@@ -81,9 +81,14 @@ pub fn collective_def() -> ValidatingEntryType {
 				EntryValidationData::Create { entry, validation_data } => {
 					match entry.admin_address {
 						Some(admin_address) => {
-							let admin:Person = hdk::utils::get_as_type(admin_address)?;
+							let admin:Person = match_tag_error(
+								hdk::utils::get_as_type(admin_address),
+								"validation error: collective: fetch admin: "
+							)?;
 							if !validation_data.sources().contains(&admin.agent_address) {
-								return Err("Collective must be created with same agent as the given person".into());
+								return Err(
+									"Collective must be created with same agent as the given person".into()
+								);
 							}
 						},
 						None => {
@@ -149,15 +154,83 @@ pub fn collective_def() -> ValidatingEntryType {
 	)
 }
 
-// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "commit_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
-pub fn create_collective(collective_params: CreateCollectiveParams) -> ZomeApiResult<CollectivePayload> {
-	let admin_address = collective_params.admin_address.clone();
-	let CommitCollectiveResponse(collective_address, _collective_entry, collective) =
-		commit_collective(collective_params.into())?;
-	create_create_collective_action(&collective_address, &collective)?;
-	create_collective_ledger(&collective.borrow(), &collective_address)?;
-	create_set_collective_name_action(&collective_address, &collective.name)?;
-	add_collective_person(&collective_address, &admin_address)?;
+// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "create_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
+pub fn create_collective(
+	collective_params: CreateCollectiveParams
+) -> ZomeApiResult<CollectivePayload> {
+	// TODO: Set name when answered: https://forum.holochain.org/t/writing-a-validation-rule-that-checks-the-entry-author-against-the-data-being-added-the-entry/1545/14?u=btakita
+	let PersonPayload {
+		person: _admin,
+		person_address: admin_address,
+	} = match collective_params.admin_address {
+		Some(admin_address) => {
+			PersonPayload {
+				person_address: admin_address.clone(),
+				person: (
+					match_tag_error(
+						hdk::utils::get_as_type(
+							admin_address.clone()
+						),
+						"create_collective: get_as_type: ",
+					)?
+				),
+			}
+		}
+		None => {
+			match_tag_error(
+				create_person(PersonParams {
+					agent_address: (
+						match collective_params.admin_address {
+							Some(admin_address) => admin_address,
+							None => PersonParams::default().agent_address
+						}
+					),
+					..PersonParams::default()
+				}),
+				"create_collective: create_person: ",
+			)?
+		}
+	};
+	let CommitCollectiveResponse(
+		collective_address,
+		_collective_entry,
+		collective,
+	) =
+		match_tag_error(
+			commit_collective(Collective {
+				name: collective_params.name,
+				admin_address: Some(admin_address.clone()),
+			}),
+			"create_collective: ",
+		)?;
+	match_tag_error(
+		create_create_collective_action(
+			&collective_address,
+			&collective,
+		),
+		"create_collective: ",
+	)?;
+	match_tag_error(
+		create_collective_ledger(
+			&collective.borrow(),
+			&collective_address,
+		),
+		"create_collective: ",
+	)?;
+	match_tag_error(
+		create_set_collective_name_action(
+			&collective_address,
+			&collective.name,
+		),
+		"create_collective: ",
+	)?;
+	match_tag_error(
+		add_collective_person(
+			&collective_address,
+			&admin_address,
+		),
+		"create_collective: ",
+	)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -167,7 +240,8 @@ pub fn create_collective(collective_params: CreateCollectiveParams) -> ZomeApiRe
 // curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePayload> {
 	let collective_address__ = collective_address.clone();
-	let collective = hdk::utils::get_as_type(collective_address__)?;
+	let collective =
+		hdk::utils::get_as_type(collective_address__)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -210,11 +284,18 @@ struct CommitCollectiveResponse(Address, Entry, Collective);
 
 fn commit_collective(collective: Collective) -> ZomeApiResult<CommitCollectiveResponse> {
 	let collective_entry = Entry::App("collective".into(), collective.borrow().into());
-	let collective_address = hdk::commit_entry(&collective_entry)?;
+	let collective_address =
+		match_tag_error(
+			hdk::commit_entry(&collective_entry),
+			"commit_collective: ",
+		)?;
 	Ok(CommitCollectiveResponse(collective_address, collective_entry, collective))
 }
 
-fn create_create_collective_action(collective_address: &Address, collective: &Collective) -> ZomeApiResult<ActionEntry> {
+fn create_create_collective_action(
+	collective_address: &Address,
+	collective: &Collective,
+) -> ZomeApiResult<ActionEntry> {
 	create_collective_action(
 		collective_address,
 		ActionOp::CreateCollective,
@@ -294,12 +375,19 @@ fn create_collective_action(
 	let action_entry = Entry::App(
 		"action".into(),
 		collective_action.borrow().into());
-	let action_address = hdk::commit_entry(&action_entry)?;
-	hdk::link_entries(
-		&collective_address,
-		&action_address,
-		"collective_action",
-		tag,
+	let action_address =
+		match_tag_error(
+			hdk::commit_entry(&action_entry),
+			"create_collective_action: commit_entry: ",
+		)?;
+	match_tag_error(
+		hdk::link_entries(
+			&collective_address,
+			&action_address,
+			"collective_action",
+			tag,
+		),
+		"create_collective_action: link_entries: ",
 	)?;
 	Ok((action_address, action_entry, collective_action))
 }

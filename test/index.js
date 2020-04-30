@@ -19,11 +19,11 @@ async function main() {
 	orchestrator.registerScenario('create_collective; get_collective', async (s, t) => {
 		const { alice } = await s.players({ alice: main_config, })
 		await alice.spawn({})
-//		const { carol } = await s.players({ carol: main_config }, true)
-//		await s.consistency()
+		const { carol } = await s.players({ carol: main_config }, true)
+		await s.consistency()
 		const { person_address, person } = await assert_create_person(alice, t)
 		await assert_get_person(alice, t, { person_address, person })
-		const { collective_address, collective } = await assert_create_collective(alice, t, { person_address })
+//		const { collective_address, collective } = await assert_create_collective(alice, t, { person_address })
 		// This next assertion times out
 //		await assert_get_collective_creator(alice, t, { collective_address, collective_creator: person })
 //		await assert_get_collective_people(alice, t, { collective_address, collective_people: [person] })

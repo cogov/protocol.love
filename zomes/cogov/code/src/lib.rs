@@ -9,15 +9,14 @@ extern crate serde_derive;
 extern crate serde_json;
 #[macro_use]
 extern crate holochain_json_derive;
-//#[macro_use]
-//extern crate log;
 
+#[macro_use]
+pub mod utils;
 pub mod action;
 pub mod collective;
 pub mod ledger;
 pub mod person;
 pub mod proposal;
-pub mod utils;
 
 use hdk_proc_macros::zome;
 //use std::borrow::Borrow;
@@ -33,7 +32,7 @@ mod cogov {
 	use crate::collective::{CollectivePayload, CreateCollectiveParams, CollectivePeoplePayload};
 	use crate::proposal::{ProposalParams, ProposalPayload};
 	use crate::action::ActionsPayload;
-	use crate::person::{PersonParams, PersonPayload};
+	use crate::person::{PersonParamsTZome, PersonPayload};
 
 	// collective
 	#[entry_def]
@@ -67,7 +66,9 @@ mod cogov {
 	}
 
 	#[validate_agent]
-	pub fn validate_agent(validation_data: hdk::EntryValidationData<AgentId>) -> Result<(), ()> {
+	pub fn validate_agent(
+		validation_data: hdk::EntryValidationData<AgentId>
+	) -> Result<(), ()> {
 		Ok(())
 	}
 
@@ -77,8 +78,8 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn create_person(person: PersonParams) -> ZomeApiResult<PersonPayload> {
-		crate::person::create_person(person)
+	pub fn create_person(person: PersonParamsTZome) -> ZomeApiResult<PersonPayload> {
+		crate::person::create_person(person.into())
 	}
 
 	#[zome_fn("hc_public")]
@@ -87,23 +88,32 @@ mod cogov {
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn create_collective(collective: CreateCollectiveParams) -> ZomeApiResult<CollectivePayload> {
+	pub fn create_collective(
+		collective: CreateCollectiveParams
+	) -> ZomeApiResult<CollectivePayload> {
 		crate::collective::create_collective(collective)
 	}
 
 	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 	#[zome_fn("hc_public")]
-	pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePayload> {
+	pub fn get_collective(
+		collective_address: Address
+	) -> ZomeApiResult<CollectivePayload> {
 		crate::collective::get_collective(collective_address)
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn set_collective_name(collective_address: Address, name: String) -> ZomeApiResult<CollectivePayload> {
+	pub fn set_collective_name(
+		collective_address: Address,
+		name: String
+	) -> ZomeApiResult<CollectivePayload> {
 		crate::collective::set_collective_name(collective_address, name)
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn get_collective_people(collective_address: Address) -> ZomeApiResult<CollectivePeoplePayload> {
+	pub fn get_collective_people(
+		collective_address: Address
+	) -> ZomeApiResult<CollectivePeoplePayload> {
 		crate::collective::get_collective_people(collective_address)
 	}
 
