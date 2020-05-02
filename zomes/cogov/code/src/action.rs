@@ -62,7 +62,7 @@ impl RootAction for Action {
 		hdk::link_entries(
 			&collective_address,
 			&action_address,
-			"collective_action",
+			"collective->action",
 			"root_action",
 		)?;
 		Ok((action_address, action_entry, self))
@@ -76,14 +76,14 @@ impl ChildAction for Action {
 		hdk::link_entries(
 			&collective_address,
 			&action_address,
-			"collective_action",
-			"child_action",
+			"collective->action",
+			"",
 		)?;
 		hdk::link_entries(
 			&parent_action_address,
 			&action_address,
-			"child_action",
-			"child_action",
+			"child->action",
+			"",
 		)?;
 		Ok((action_address, action_entry, self))
 	}
@@ -113,7 +113,7 @@ pub fn action_def() -> ValidatingEntryType {
 			),
 			to!(
 				"action",
-				link_type: "child_action",
+				link_type: "child->action",
 				validation_package: || {
 					hdk::ValidationPackageDefinition::Entry
 				},
@@ -129,7 +129,7 @@ pub fn action_def() -> ValidatingEntryType {
 pub fn get_actions(collective_address: Address) -> ZomeApiResult<ActionsPayload> {
 	let mut actions = hdk::utils::get_links_and_load_type(
 		&collective_address,
-		LinkMatch::Exactly("collective_action"),
+		LinkMatch::Exactly("collective->action"),
 		LinkMatch::Any,
 	)?;
 	actions.reverse();

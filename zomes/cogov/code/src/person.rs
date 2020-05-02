@@ -9,7 +9,7 @@ use hdk::holochain_json_api::{
 use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_persistence_api::cas::content::Address;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
-use crate::utils::{match_tag_error};
+use crate::utils::{t};
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct PersonParamsTZome {
@@ -143,14 +143,11 @@ pub fn create_person(person_params: PersonParams) -> ZomeApiResult<PersonPayload
 		_person_entry,
 		person,
 	) =
-		match_tag_error(
-			commit_person(Person {
-				name: person_params.name,
-				agent_address: person_params.agent_address,
-				status: person_params.status,
-			}),
-			"create_person: "
-		)?;
+		t("create_person: ", commit_person(Person {
+			name: person_params.name,
+			agent_address: person_params.agent_address,
+			status: person_params.status,
+		}))?;
 	Ok(PersonPayload {
 		person_address,
 		person,

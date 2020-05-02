@@ -2,7 +2,6 @@ const test = require('tape-async')
 const fetch = require('node-fetch')
 const { TEST_URL } = process.env
 const deepEqual = require('deep-equal')
-console.debug(`TEST_URL`, TEST_URL)
 const { assign } = Object
 const clone = (...arg_a1) => assign({}, ...arg_a1)
 main()
