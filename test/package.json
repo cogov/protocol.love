@@ -1,6 +1,9 @@
 {
+	"type": "module",
 	"dependencies": {
+		"@ctx-core/object": "^8.0.8",
 		"@holochain/tryorama": "^0.3.2-dev.2",
+		"esm": "^3.2.25",
 		"faucet": "0.0.1",
 		"json3": "*",
 		"node-fetch": "^2.6.0",
