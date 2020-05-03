@@ -1,9 +1,9 @@
+require = require('esm')(module)
 const test = require('tape-async')
 const fetch = require('node-fetch')
 const { TEST_URL } = process.env
 const deepEqual = require('deep-equal')
-const { assign } = Object
-const clone = (...arg_a1) => assign({}, ...arg_a1)
+const { assign, clone } = require('@ctx-core/object')
 main()
 async function main() {
 	test('scenario: create_person, get_person, create_collective, get_collective, set_collective_name', async (t) => {
@@ -62,7 +62,7 @@ async function _api_result(t, params) {
 	return JSON.parse(result)
 }
 async function post_api(params) {
-	return fetch(TEST_URL, Object.assign({
+	return fetch(TEST_URL, assign({
 		method: 'POST',
 		headers: {
 			'Accept': 'application/json',
