@@ -9,4 +9,4 @@ conductor-config.toml
 .env
 .cargo
 tmp
-yarn.lock
+package.lock
