@@ -1,7 +1,7 @@
 {
 	"dependencies": {
 		"@ctx-core/object": "^8.0.8",
-		"@holochain/tryorama": "^0.3.2-dev.2",
+		"@holochain/tryorama": "^0.3.2-dev.3",
 		"esm": "^3.2.25",
 		"faucet": "0.0.1",
 		"json3": "*",
