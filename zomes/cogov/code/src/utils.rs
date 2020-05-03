@@ -8,12 +8,13 @@ pub fn get_as_type_ref<R: TryFrom<AppEntryValue>>(address: &Address) -> ZomeApiR
 }
 
 pub fn tag_error<T>(error: ZomeApiError, tag: &str) -> ZomeApiResult<T> {
-	let mut error_msg = tag.to_owned();
+	let mut error_msg = "".to_owned();
+	error_msg.push_str(tag);
 	error_msg.push_str(&error.to_string());
 	return Err(error_msg.into());
 }
 
-pub fn match_tag_error<T>(result: ZomeApiResult<T>, tag: &str) -> ZomeApiResult<T> {
+pub fn t<T>(tag: &str, result: ZomeApiResult<T>) -> ZomeApiResult<T> {
 	match result {
 		Ok(val) => Ok(val),
 		Err(error) =>

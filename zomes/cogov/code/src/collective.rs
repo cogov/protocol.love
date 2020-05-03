@@ -10,10 +10,11 @@ use holochain_wasm_utils::holochain_core_types::entry::Entry;
 use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
 use crate::action::{Action, ActionStatus, ActionStrategy, ActionOp, ActionEntry};
-use crate::utils::{get_as_type_ref, match_tag_error};
+use crate::utils::{get_as_type_ref, t};
 use crate::person::{Person, create_person, PersonParams, PersonPayload};
 use holochain_wasm_utils::holochain_core_types::link::LinkMatch;
 use std::fmt;
+use holochain_wasm_utils::api_serialization::get_links::{GetLinksOptions};
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Collective {
@@ -51,6 +52,15 @@ pub struct CollectivePayload {
 	pub collective: Collective,
 }
 
+impl Default for CollectivePayload {
+	fn default() -> Self {
+		CollectivePayload {
+			collective_address: Default::default(),
+			collective: Default::default(),
+		}
+	}
+}
+
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub enum CollectivePersonTag {
 	Creator,
@@ -81,10 +91,8 @@ pub fn collective_def() -> ValidatingEntryType {
 				EntryValidationData::Create { entry, validation_data } => {
 					match entry.admin_address {
 						Some(admin_address) => {
-							let admin:Person = match_tag_error(
-								hdk::utils::get_as_type(admin_address),
-								"validation error: collective: fetch admin: "
-							)?;
+							let admin:Person = t("validation error: collective: fetch admin: ",
+								hdk::utils::get_as_type(admin_address), )?;
 							if !validation_data.sources().contains(&admin.agent_address) {
 								return Err(
 									"Collective must be created with same agent as the given person".into()
@@ -103,12 +111,16 @@ pub fn collective_def() -> ValidatingEntryType {
 						Some(admin_address) => {
 							let admin:Person = hdk::utils::get_as_type(admin_address)?;
 							if !validation_data.sources().contains(&admin.agent_address) {
-								return Err(String::from("Collective can only be modified by the admin"));
+								return Err(
+									"Collective can only be modified by the admin".into()
+								);
 							};
 						},
 						None => {
 							// TODO: Logic for a Proposal to update this collective
-							return Err("Collective can only be modified with an executed proposal".into());
+							return Err(
+								"Collective can only be modified with an executed proposal".into()
+							);
 						}
 					}
 
@@ -122,7 +134,7 @@ pub fn collective_def() -> ValidatingEntryType {
 		links: [
 			to!(
 				"action",
-				link_type: "collective_action",
+				link_type: "collective->action",
 				validation_package: || {
 					hdk::ValidationPackageDefinition::Entry
 				},
@@ -132,7 +144,7 @@ pub fn collective_def() -> ValidatingEntryType {
 			),
 			to!(
 				"person",
-				link_type: "collective_person",
+				link_type: "collective->person",
 				validation_package: || {
 					hdk::ValidationPackageDefinition::Entry
 				},
@@ -142,7 +154,7 @@ pub fn collective_def() -> ValidatingEntryType {
 			),
 			to!(
 				"ledger",
-				link_type: "collective_ledger",
+				link_type: "collective->ledger",
 				validation_package: || {
 					hdk::ValidationPackageDefinition::Entry
 				},
@@ -167,17 +179,15 @@ pub fn create_collective(
 			PersonPayload {
 				person_address: admin_address.clone(),
 				person: (
-					match_tag_error(
+					t("create_collective: get_as_type: ",
 						hdk::utils::get_as_type(
 							admin_address.clone()
 						),
-						"create_collective: get_as_type: ",
-					)?
-				),
+					)?),
 			}
 		}
 		None => {
-			match_tag_error(
+			t("create_collective: create_person: ",
 				create_person(PersonParams {
 					agent_address: (
 						match collective_params.admin_address {
@@ -186,9 +196,7 @@ pub fn create_collective(
 						}
 					),
 					..PersonParams::default()
-				}),
-				"create_collective: create_person: ",
-			)?
+				}))?
 		}
 	};
 	let CommitCollectiveResponse(
@@ -196,41 +204,27 @@ pub fn create_collective(
 		_collective_entry,
 		collective,
 	) =
-		match_tag_error(
-			commit_collective(Collective {
+		t("create_collective: ", commit_collective(
+			Collective {
 				name: collective_params.name,
 				admin_address: Some(admin_address.clone()),
-			}),
-			"create_collective: ",
-		)?;
-	match_tag_error(
-		create_create_collective_action(
-			&collective_address,
-			&collective,
-		),
-		"create_collective: ",
-	)?;
-	match_tag_error(
-		create_collective_ledger(
-			&collective.borrow(),
-			&collective_address,
-		),
-		"create_collective: ",
-	)?;
-	match_tag_error(
-		create_set_collective_name_action(
-			&collective_address,
-			&collective.name,
-		),
-		"create_collective: ",
-	)?;
-	match_tag_error(
-		add_collective_person(
-			&collective_address,
-			&admin_address,
-		),
-		"create_collective: ",
-	)?;
+			}))?;
+	t("create_collective: ", create_create_collective_action(
+		&collective_address,
+		&collective,
+	))?;
+	t("create_collective: ", create_collective_ledger(
+		&collective.borrow(),
+		&collective_address,
+	))?;
+	t("create_collective: ", create_set_collective_name_action(
+		&collective_address,
+		&collective.name,
+	))?;
+	t("create_collective: ", add_collective_person(
+		&collective_address,
+		&admin_address,
+	))?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -245,10 +239,14 @@ pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePa
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
+		..CollectivePayload::default()
 	})
 }
 
-pub fn set_collective_name(collective_address: Address, name: String) -> ZomeApiResult<CollectivePayload> {
+pub fn set_collective_name(
+	collective_address: Address,
+	name: String,
+) -> ZomeApiResult<CollectivePayload> {
 	let saved_collective = get_as_type_ref(&collective_address)?;
 	let collective = Collective {
 		name,
@@ -259,15 +257,26 @@ pub fn set_collective_name(collective_address: Address, name: String) -> ZomeApi
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
+		..CollectivePayload::default()
 	})
 }
 
-pub fn get_collective_people(collective_address: Address) -> ZomeApiResult<CollectivePeoplePayload> {
+pub fn get_collective_people(
+	collective_address: Address
+) -> ZomeApiResult<CollectivePeoplePayload> {
+	hdk::get_links_with_options(
+		&collective_address,
+		LinkMatch::Exactly("collective->person"),
+		LinkMatch::Any,
+		GetLinksOptions::default(),
+	)?;
 	let collective_people =
-		hdk::utils::get_links_and_load_type(
-			&collective_address,
-			LinkMatch::Exactly("collective_person"),
-			LinkMatch::Any,
+		t("get_collective_people: get_links_and_load_type: ",
+			hdk::utils::get_links_and_load_type(
+				&collective_address,
+				LinkMatch::Exactly("collective->person"),
+				LinkMatch::Any,
+			),
 		)?;
 	Ok(CollectivePeoplePayload {
 		collective_address,
@@ -275,7 +284,10 @@ pub fn get_collective_people(collective_address: Address) -> ZomeApiResult<Colle
 	})
 }
 
-fn update_collective(collective_address: &Address, collective: &Collective) -> ZomeApiResult<Address> {
+fn update_collective(
+	collective_address: &Address,
+	collective: &Collective,
+) -> ZomeApiResult<Address> {
 	let collective_entry = Entry::App("collective".into(), collective.into());
 	hdk::update_entry(collective_entry, &collective_address)
 }
@@ -285,10 +297,7 @@ struct CommitCollectiveResponse(Address, Entry, Collective);
 fn commit_collective(collective: Collective) -> ZomeApiResult<CommitCollectiveResponse> {
 	let collective_entry = Entry::App("collective".into(), collective.borrow().into());
 	let collective_address =
-		match_tag_error(
-			hdk::commit_entry(&collective_entry),
-			"commit_collective: ",
-		)?;
+		t("commit_collective: ", hdk::commit_entry(&collective_entry))?;
 	Ok(CommitCollectiveResponse(collective_address, collective_entry, collective))
 }
 
@@ -309,14 +318,15 @@ fn add_collective_person(
 	collective_address: &Address,
 	person_address: &Address,
 ) -> ZomeApiResult<Address> {
-	let link_address = hdk::link_entries(
-		collective_address,
-		person_address,
-		"collective_person",
-		&CollectivePersonTag::Creator.to_string(),
-	)?;
+	let collective_person_address =
+		t("add_collective_person: ", hdk::link_entries(
+			collective_address,
+			person_address,
+			"collective->person",
+			&CollectivePersonTag::Creator.to_string(),
+		))?;
 	create_add_collective_person_action(collective_address, person_address)?;
-	Ok(link_address)
+	Ok(collective_person_address)
 }
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -324,7 +334,10 @@ struct AddCollectivePersonActionData {
 	person_address: Address,
 }
 
-fn create_add_collective_person_action(collective_address: &Address, person_address: &Address) -> ZomeApiResult<ActionEntry> {
+fn create_add_collective_person_action(
+	collective_address: &Address,
+	person_address: &Address,
+) -> ZomeApiResult<ActionEntry> {
 	create_collective_action(
 		collective_address,
 		ActionOp::AddCollectivePerson,
@@ -341,7 +354,10 @@ struct SetCollectiveNameActionData {
 	name: String
 }
 
-fn create_set_collective_name_action(collective_address: &Address, name: &String) -> ZomeApiResult<ActionEntry> {
+fn create_set_collective_name_action(
+	collective_address: &Address,
+	name: &String,
+) -> ZomeApiResult<ActionEntry> {
 	create_collective_action(
 		collective_address,
 		ActionOp::SetCollectiveName,
@@ -376,18 +392,14 @@ fn create_collective_action(
 		"action".into(),
 		collective_action.borrow().into());
 	let action_address =
-		match_tag_error(
-			hdk::commit_entry(&action_entry),
-			"create_collective_action: commit_entry: ",
-		)?;
-	match_tag_error(
+		t("create_collective_action: commit_entry: ",
+			hdk::commit_entry(&action_entry))?;
+	t("create_collective_action: collective->action: ",
 		hdk::link_entries(
 			&collective_address,
 			&action_address,
-			"collective_action",
+			"collective->action",
 			tag,
-		),
-		"create_collective_action: link_entries: ",
-	)?;
+		))?;
 	Ok((action_address, action_entry, collective_action))
 }
