@@ -8,10 +8,10 @@ const { clone } = require('@ctx-core/object')
 // The DNA file can either be on your filesystem...
 main()
 async function main() {
-	const cogov_dna_path = path.join(__dirname, `../dist/${fs.readdirSync(`${__dirname}/../dist/`)}`)
-	const cogov_dna = tryorama.Config.dna(cogov_dna_path, 'cogov')
+	const protocol_love_dna_path = path.join(__dirname, `../dist/${fs.readdirSync(`${__dirname}/../dist/`)}`)
+	const protocol_love_dna = tryorama.Config.dna(protocol_love_dna_path, 'protocol-love')
 	const main_config = tryorama.Config.gen({
-		cogov: cogov_dna,
+		'protocol-love': protocol_love_dna,
 	}, {
 		network: {
 			type: 'sim2h',
@@ -93,7 +93,7 @@ async function main() {
 	console.log(report)
 }
 async function player_call(player, name, params) {
-	return player.call('cogov', 'cogov', name, params)
+	return player.call('protocol-love', 'protocol-love', name, params)
 }
 async function assert_create_person(player, t) {
 	const create_person_result =

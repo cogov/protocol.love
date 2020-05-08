@@ -25,7 +25,7 @@ impl Default for Ledger {
 pub fn ledger_def() -> ValidatingEntryType {
 	entry!(
 		name: "ledger",
-		description: "A cogov collective ledger",
+		description: "A protocol.love collective ledger",
 		sharing: Sharing::Public,
 		validation_package: || {
 			hdk::ValidationPackageDefinition::Entry

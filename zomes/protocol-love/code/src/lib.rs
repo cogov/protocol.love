@@ -23,7 +23,7 @@ use hdk_proc_macros::zome;
 //use std::borrow::Borrow;
 
 #[zome]
-mod cogov {
+mod protocol_love {
 	use hdk::holochain_core_types::entry::Entry;
 	use hdk::holochain_persistence_api::{
 		cas::content::Address
@@ -95,7 +95,7 @@ mod cogov {
 		crate::collective::create_collective(collective)
 	}
 
-	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
+	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "protocol-love", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 	#[zome_fn("hc_public")]
 	pub fn get_collective(
 		collective_address: Address
@@ -118,7 +118,7 @@ mod cogov {
 		crate::collective::get_collective_people(collective_address)
 	}
 
-	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
+	// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "protocol-love", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 	#[zome_fn("hc_public")]
 	pub fn get_actions(collective_address: Address) -> ZomeApiResult<ActionsPayload> {
 		crate::action::get_actions(collective_address)

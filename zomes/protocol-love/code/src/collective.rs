@@ -81,7 +81,7 @@ pub struct CollectivePeoplePayload {
 pub fn collective_def() -> ValidatingEntryType {
 	entry!(
 		name: "collective",
-		description: "A cogov collective",
+		description: "A protocol.love collective",
 		sharing: Sharing::Public,
 		validation_package: || {
 			hdk::ValidationPackageDefinition::Entry
@@ -166,7 +166,7 @@ pub fn collective_def() -> ValidatingEntryType {
 	)
 }
 
-// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "create_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
+// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "protocol-love", "function": "create_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
 pub fn create_collective(
 	collective_params: CreateCollectiveParams
 ) -> ZomeApiResult<CollectivePayload> {
@@ -231,7 +231,7 @@ pub fn create_collective(
 	})
 }
 
-// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
+// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "protocol-love", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePayload> {
 	let collective_address__ = collective_address.clone();
 	let collective =

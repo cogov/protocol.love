@@ -1,5 +1,5 @@
 [package]
-name = "cogov"
+name = "protocol-love"
 version = "0.1.0"
 authors = ["hc-scaffold-framework"]
 edition = "2018"

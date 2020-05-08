@@ -126,7 +126,7 @@ impl ChildAction for Action {
 pub fn action_def() -> ValidatingEntryType {
 	entry!(
 		name: "action",
-		description: "A cogov collective action",
+		description: "A protocol.love collective action",
 		sharing: Sharing::Public,
 		validation_package: || {
 			hdk::ValidationPackageDefinition::Entry
@@ -164,7 +164,7 @@ pub fn action_def() -> ValidatingEntryType {
 ///
 /// Test:
 /// ```
-/// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "cogov", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
+/// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "protocol-love", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 /// ```
 pub fn get_actions(collective_address: Address) -> ZomeApiResult<ActionsPayload> {
 	let mut actions = hdk::utils::get_links_and_load_type(

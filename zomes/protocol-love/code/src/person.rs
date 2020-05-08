@@ -83,7 +83,7 @@ pub struct PersonPayload {
 pub fn person_def() -> ValidatingEntryType {
 	entry!(
 		name: "person",
-		description: "A cogov person",
+		description: "A protocol.love person",
 		sharing: Sharing::Public,
 		validation_package: || {
 			hdk::ValidationPackageDefinition::Entry
