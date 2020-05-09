@@ -9,6 +9,7 @@ use hdk::prelude::{ZomeApiResult, ValidatingEntryType};
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
 use crate::utils::t;
 
+/// A ledger to account for transactions relating to a [Collective](struct.Collective.html).
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Ledger {
 	pub name: String,
@@ -22,6 +23,7 @@ impl Default for Ledger {
 	}
 }
 
+/// Returns a Holochain entry definition for a ledger.
 pub fn ledger_def() -> ValidatingEntryType {
 	entry!(
 		name: "ledger",
@@ -36,6 +38,7 @@ pub fn ledger_def() -> ValidatingEntryType {
 	)
 }
 
+/// Create & commit a [Ledger](struct.Ledger.html) for a [Collective](struct.Collective.html).
 pub fn create_collective_ledger(collective: &Collective, collective_address: &Address) -> ZomeApiResult<Address> {
 	let ledger_name =
 		format!("Primary Ledger for {}", collective.name).to_string();
@@ -54,7 +57,7 @@ pub fn create_collective_ledger(collective: &Collective, collective_address: &Ad
 	Ok(ledger_address)
 }
 
-pub fn commit_ledger(ledger: Ledger) -> ZomeApiResult<Address> {
+fn commit_ledger(ledger: Ledger) -> ZomeApiResult<Address> {
 	let ledger_entry = Entry::App("ledger".into(), ledger.into());
 	let ledger_address =
 		t("commit_ledger: ", hdk::commit_entry(&ledger_entry))?;

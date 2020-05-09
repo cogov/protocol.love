@@ -123,6 +123,7 @@ impl ChildAction for Action {
 	}
 }
 
+/// Returns a Holochain entry definition for an action.
 pub fn action_def() -> ValidatingEntryType {
 	entry!(
 		name: "action",

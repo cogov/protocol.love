@@ -93,6 +93,7 @@ pub struct CollectivePeoplePayload {
 	pub collective_people: Vec<Person>,
 }
 
+/// Returns a Holochain entry definition for a collective.
 pub fn collective_def() -> ValidatingEntryType {
 	entry!(
 		name: "collective",
