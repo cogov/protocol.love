@@ -9,15 +9,21 @@ use std::borrow::Borrow;
 use hdk::error::ZomeApiResult;
 use hdk::prelude::ValidatingEntryType;
 
+/// Api params for [create_proposal](fn.create_proposal.html).
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct ProposalParams {
+	/// Name of the proposal.
 	pub name: String,
+	/// Text content of the proposal.
 	pub content: String,
 }
 
+/// A proposal to change the collective.
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Proposal {
+	/// Name of the proposal
 	pub name: String,
+	/// Text content of the proposal.
 	pub content: String,
 }
 
@@ -30,12 +36,15 @@ impl Default for Proposal {
 	}
 }
 
+/// Api payload for a [Proposal](struct.Proposal.html)
+/// returned by [create_proposal](fn.create_proposal.html).
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct ProposalPayload {
 	pub proposal_address: Address,
 	pub proposal: Proposal,
 }
 
+/// Returns a Holochain entry definition for a proposal.
 pub fn proposal_def() -> ValidatingEntryType {
 	entry!(
 		name: "proposal",
@@ -50,6 +59,7 @@ pub fn proposal_def() -> ValidatingEntryType {
 	)
 }
 
+/// Api to create & commit a [Proposal](struct.Proposal.html).
 pub fn create_proposal(proposal_params: ProposalParams) -> ZomeApiResult<ProposalPayload> {
 	let (proposal_address, _proposal_entry, proposal2) =
 		commit_proposal(Proposal {
