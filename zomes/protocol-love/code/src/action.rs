@@ -162,7 +162,7 @@ pub fn action_def() -> ValidatingEntryType {
 /// Get an [ActionsPayload](struct.ActionsPayload.html) of all of the [Actions](struct.Action.html)
 /// linked to the [Collective](struct.Collective.html).
 ///
-/// Test:
+/// # Test:
 /// ```
 /// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "protocol-love", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 /// ```

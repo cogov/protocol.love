@@ -16,12 +16,22 @@ use holochain_wasm_utils::holochain_core_types::link::LinkMatch;
 use std::fmt;
 use holochain_wasm_utils::api_serialization::get_links::{GetLinksOptions};
 
+/// A collective.
+///
+/// Has a name & an optional admin_address.
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Collective {
+	/// Name of the Collective
 	pub name: String,
+	/// Administrator address of the collective.
+	///
+	/// Used during the initial creation of the collective.
+	///
+	/// TODO: Move to a link or a [CollectivePersonTag](enum.CollectivePersonTag.html)
 	pub admin_address: Option<Address>,
 }
 
+/// Api params to create a [Collective](struct.Collective.html) along with an optional `admin_address`.
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CreateCollectiveParams {
 	pub name: String,
@@ -46,6 +56,7 @@ impl Default for Collective {
 	}
 }
 
+/// Api payload containing a collective_address & collective.
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CollectivePayload {
 	pub collective_address: Address,
@@ -61,8 +72,10 @@ impl Default for CollectivePayload {
 	}
 }
 
+/// Tag of a [Person](struct.Person.html) in a [Collective](struct.Collective.html).
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub enum CollectivePersonTag {
+	/// Creator of the [Collective](struct.Collective.html)
 	Creator,
 }
 
@@ -72,9 +85,11 @@ impl fmt::Display for CollectivePersonTag {
 	}
 }
 
+/// Api Payload of People in a Collective.
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct CollectivePeoplePayload {
 	pub collective_address: Address,
+	/// [People](struct.Person.html) in a [Collective](struct.Collective.html).
 	pub collective_people: Vec<Person>,
 }
 
@@ -166,7 +181,13 @@ pub fn collective_def() -> ValidatingEntryType {
 	)
 }
 
-// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "protocol-love", "function": "create_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
+/// Api function to create & commit a [Collective](struct.Collective.html) along with the admin.
+///
+/// The optional admin_address defaults to the `hdk::AGENT_ADDRESS`.
+///
+/// # Test:
+///
+/// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "protocol-love", "function": "create_collective", "args": { "collective": { "name": "Collective 0" } } }}' http://127.0.0.1:8888
 pub fn create_collective(
 	collective_params: CreateCollectiveParams
 ) -> ZomeApiResult<CollectivePayload> {
@@ -231,7 +252,11 @@ pub fn create_collective(
 	})
 }
 
-// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "protocol-love", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
+/// Api to get the [Collective](struct.Collective.html).
+///
+/// # Test:
+///
+/// curl -X POST -H "Content-Type: application/json" -d '{"id": "0", "jsonrpc": "2.0", "method": "call", "params": {"instance_id": "test-instance", "zome": "protocol-love", "function": "get_collective", "args": { "collective_address": "addr" } }}' http://127.0.0.1:8888
 pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePayload> {
 	let collective_address__ = collective_address.clone();
 	let collective =
@@ -243,6 +268,7 @@ pub fn get_collective(collective_address: Address) -> ZomeApiResult<CollectivePa
 	})
 }
 
+/// Api to set the [Collective](struct.Collective.html) name.
 pub fn set_collective_name(
 	collective_address: Address,
 	name: String,
@@ -261,6 +287,7 @@ pub fn set_collective_name(
 	})
 }
 
+/// Api to get the [People](struct.Person.html) in the [Collective](struct.Collective.html).
 pub fn get_collective_people(
 	collective_address: Address
 ) -> ZomeApiResult<CollectivePeoplePayload> {
