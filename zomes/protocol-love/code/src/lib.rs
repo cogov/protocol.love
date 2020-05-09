@@ -33,7 +33,7 @@ mod protocol_love {
 	use crate::collective::{CollectivePayload, CreateCollectiveParams, CollectivePeoplePayload};
 	use crate::proposal::{ProposalParams, ProposalPayload};
 	use crate::action::ActionsPayload;
-	use crate::person::{PersonParamsTZome, PersonPayload};
+	use crate::person::{OptionalPersonParams, PersonPayload};
 
 	// collective
 	#[entry_def]
@@ -79,7 +79,7 @@ mod protocol_love {
 	}
 
 	#[zome_fn("hc_public")]
-	pub fn create_person(person: PersonParamsTZome) -> ZomeApiResult<PersonPayload> {
+	pub fn create_person(person: OptionalPersonParams) -> ZomeApiResult<PersonPayload> {
 		crate::person::create_person(person.into())
 	}
 

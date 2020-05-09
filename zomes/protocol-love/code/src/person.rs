@@ -11,14 +11,19 @@ use holochain_persistence_api::cas::content::Address;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
 use crate::utils::{t};
 
+/// Api params with name, optional agent_address, & optional status.
+///
+/// Convertable into [PersonParams](struct.PersonParams.html).
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
-pub struct PersonParamsTZome {
+pub struct OptionalPersonParams {
 	pub name: String,
+	/// Optional agent_address defaults to hdk::AGENT_ADDRESS
 	pub agent_address: Option<Address>,
+	/// Optional status defaults to [PersonStatus::Active](enum.PersonStatus.html).
 	pub status: Option<PersonStatus>,
 }
 
-impl Into<PersonParams> for PersonParamsTZome {
+impl Into<PersonParams> for OptionalPersonParams {
 	fn into(self) -> PersonParams {
 		PersonParams {
 			name: self.name,
@@ -34,6 +39,7 @@ impl Into<PersonParams> for PersonParamsTZome {
 	}
 }
 
+/// Params for [create_person](fn.create_person.html).
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct PersonParams {
 	pub name: String,
@@ -51,16 +57,23 @@ impl Default for PersonParams {
 	}
 }
 
+/// Is the [Person](struct.Person.html) Active or Inactive.
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub enum PersonStatus {
-	Active,
+	/// [Person](struct.Person.html) is currently active in the [Collective](struct.Collective.html).
 	Inactive,
+	/// [Person](struct.Person.html) is currently inactive in the [Collective](struct.Collective.html).
+	Active,
 }
 
+/// Person participating with a [Collective](struct.Collective.html).
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Person {
+	/// Address of the Person's Holochain agent.
 	pub agent_address: Address,
+	/// Name of the Person.
 	pub name: String,
+	/// Is the Person Active or Inactive?
 	pub status: PersonStatus,
 }
 
@@ -74,12 +87,14 @@ impl Default for Person {
 	}
 }
 
+/// Api payload containing the `person_address` & [person](struct.Person.html).
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct PersonPayload {
 	pub person_address: Address,
 	pub person: Person,
 }
 
+/// Returns a Holochain entry definition for a person.
 pub fn person_def() -> ValidatingEntryType {
 	entry!(
 		name: "person",
@@ -137,6 +152,7 @@ fn validate_name(name: &str) -> Result<(), String> {
 	}
 }
 
+/// Api function to create & commit a [Person](struct.Person.html).
 pub fn create_person(person_params: PersonParams) -> ZomeApiResult<PersonPayload> {
 	let CommitPersonResponse(
 		person_address,
@@ -154,6 +170,7 @@ pub fn create_person(person_params: PersonParams) -> ZomeApiResult<PersonPayload
 	})
 }
 
+/// Api function to get a [Person](struct.Person.html).
 pub fn get_person(person_address: Address) -> ZomeApiResult<PersonPayload> {
 	let person_address__ = person_address.clone();
 	let person = hdk::utils::get_as_type(person_address__)?;
