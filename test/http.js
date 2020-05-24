@@ -79,7 +79,7 @@ async function post_api(params) {
 function _api_params(function_name, args) {
 	return {
 		'instance_id': 'test-instance',
-		'zome': 'cogov',
+		'zome': 'protocol-love',
 		'function': function_name,
 		'args': args
 	}

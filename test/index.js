@@ -45,7 +45,7 @@ async function main() {
 					collective_address: collective_address,
 					actions: [
 						_create_collective_action(collective),
-						_set_collective_name_action(collective.name),
+						_set_collective_name_action(collective.name, null),
 						_add_collective_person_action(person_address),
 					]
 				}
@@ -71,23 +71,12 @@ async function main() {
 					collective_address: collective_address,
 					actions: [
 						_create_collective_action(collective),
-						_set_collective_name_action(collective.name),
+						_set_collective_name_action(collective.name, null),
 						_add_collective_person_action(person_address),
-						_set_collective_name_action(collective__renamed.name),
+						_set_collective_name_action(collective__renamed.name, collective.name),
 					]
 				}
 			})
-		t.deepEqual(await _get_actions_result(alice, t, collective_address), {
-			Ok: {
-				collective_address: collective_address,
-				actions: [
-					_create_collective_action(collective),
-					_set_collective_name_action(collective.name),
-					_add_collective_person_action(person_address),
-					_set_collective_name_action(collective__renamed.name),
-				]
-			}
-		})
 	})
 	const report = await orchestrator.run()
 	console.log(report)
@@ -251,15 +240,17 @@ function _create_collective_action(collective) {
 		op: 'CreateCollective',
 		status: 'Executed',
 		data: JSON.stringify(collective),
+		prev_data: JSON.stringify(null),
 		tag: 'create_collective',
 		strategy: 'SystemAutomatic'
 	}
 }
-function _set_collective_name_action(name) {
+function _set_collective_name_action(name, prev_name) {
 	return {
 		op: 'SetCollectiveName',
 		status: 'Executed',
 		data: JSON.stringify({ name }),
+		prev_data: JSON.stringify(prev_name && { name: prev_name }),
 		tag: 'set_collective_name',
 		strategy: 'SystemAutomatic'
 	}
@@ -269,6 +260,7 @@ function _add_collective_person_action(person_address) {
 		op: 'AddCollectivePerson',
 		status: 'Executed',
 		data: JSON.stringify({ person_address }),
+		prev_data: JSON.stringify(null),
 		tag: 'add_collective_person',
 		strategy: 'SystemAutomatic'
 	}

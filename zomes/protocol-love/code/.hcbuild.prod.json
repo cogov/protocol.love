@@ -15,32 +15,32 @@
     },
     {
       "command": "CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-/tmp/my_first_app/target} && wasm-gc",
-      "arguments": ["$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/cogov.wasm"]
+      "arguments": ["$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/protocol_love.wasm"]
     },
     {
       "command": "CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-/tmp/my_first_app/target} && wasm-opt",
       "arguments": [
         "-Oz",
         "--vacuum",
-        "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/cogov.wasm"
+        "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/protocol_love.wasm"
       ]
     },
     {
       "command": "CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-/tmp/my_first_app/target} && wasm2wat",
       "arguments": [
-        "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/cogov.wasm",
+        "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/protocol_love.wasm",
         "-o",
-        "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/cogov.wat"
+        "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/protocol_love.wat"
       ]
     },
     {
       "command": "CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-/tmp/my_first_app/target} && wat2wasm",
       "arguments": [
-        "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/cogov.wat",
+        "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/protocol_love.wat",
         "-o",
-        "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/cogov.wasm"
+        "$CARGO_TARGET_DIR/wasm32-unknown-unknown/release/protocol_love.wasm"
       ]
     }
   ],
-  "artifact": "${CARGO_TARGET_DIR:-/tmp/my_first_app/target}/wasm32-unknown-unknown/release/cogov.wasm"
+  "artifact": "${CARGO_TARGET_DIR:-/tmp/my_first_app/target}/wasm32-unknown-unknown/release/protocol_love.wasm"
 }

@@ -21,13 +21,13 @@ use hdk::prelude::ValidatingEntryType;
 /// Action {
 ///		op: ActionOp::CreateCollective,
 /// 	status: ActionStatus::Executed,
-/// 	data: json!({"name": "My Collective", "admin_address": hdk::AGENT_ADDRESS.clone()}),
+/// 	data: json!({"name": "My Collective", "admin_address": hdk::AGENT_ADDRESS.clone()}).into(),
+/// 	prev_data: serde_json::value::Value::Null.into(),
 /// 	tag: "create_collective".into(),
 /// 	strategy: ActionStrategy::SystemAutomatic
 /// }
 /// ```
 ///
-/// TODO: `Action` should enable a reversible action to support undo operations.
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct Action {
 	/// Represents each of the allowed operations
@@ -36,6 +36,8 @@ pub struct Action {
 	pub status: ActionStatus,
 	/// Action Data encoded as JSON.
 	pub data: JsonString,
+	/// Previous Action Data encoded as JSON for undo purposes.
+	pub prev_data: JsonString,
 	pub tag: String,
 	/// How the Action was performed
 	pub strategy: ActionStrategy,

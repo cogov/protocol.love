@@ -242,6 +242,7 @@ pub fn create_collective(
 	t("create_collective: ", create_set_collective_name_action(
 		&collective_address,
 		&collective.name,
+		None,
 	))?;
 	t("create_collective: ", add_collective_person(
 		&collective_address,
@@ -280,7 +281,11 @@ pub fn set_collective_name(
 		..saved_collective
 	};
 	update_collective(&collective_address, &collective)?;
-	create_set_collective_name_action(&collective_address, &collective.name)?;
+	create_set_collective_name_action(
+		&collective_address,
+		&collective.name,
+		Some(&saved_collective.name),
+	)?;
 	Ok(CollectivePayload {
 		collective_address,
 		collective,
@@ -337,6 +342,7 @@ fn create_create_collective_action(
 		collective_address,
 		ActionOp::CreateCollective,
 		collective.into(),
+		serde_json::value::Value::Null.into(),
 		&"create_collective".into(),
 		ActionStrategy::SystemAutomatic,
 	)
@@ -372,6 +378,7 @@ fn create_add_collective_person_action(
 		AddCollectivePersonActionData {
 			person_address: person_address.clone(),
 		}.into(),
+		serde_json::value::Value::Null.into(),
 		&"add_collective_person".into(),
 		ActionStrategy::SystemAutomatic,
 	)
@@ -385,6 +392,7 @@ struct SetCollectiveNameActionData {
 fn create_set_collective_name_action(
 	collective_address: &Address,
 	name: &String,
+	prev_name_opt: Option<&String>,
 ) -> ZomeApiResult<ActionEntry> {
 	create_collective_action(
 		collective_address,
@@ -392,6 +400,12 @@ fn create_set_collective_name_action(
 		SetCollectiveNameActionData {
 			name: name.clone()
 		}.into(),
+		match prev_name_opt {
+			Some(prev_name) => SetCollectiveNameActionData {
+				name: prev_name.clone(),
+			}.into(),
+			None => serde_json::value::Value::Null.into()
+		},
 		&"set_collective_name".into(),
 		ActionStrategy::SystemAutomatic,
 	)
@@ -406,13 +420,15 @@ fn create_collective_action(
 	collective_address: &Address,
 	op: ActionOp,
 	data: JsonString,
+	prev_data: JsonString,
 	tag: &String,
 	strategy: ActionStrategy,
 ) -> ZomeApiResult<ActionEntry> {
 	let collective_action = Action {
 		op,
 		status: ActionStatus::Executed,
-		data: data.into(),
+		data,
+		prev_data,
 		tag: tag.into(),
 		strategy: strategy.into(),
 	};
