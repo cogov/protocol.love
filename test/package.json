@@ -4,7 +4,7 @@
 		"@holochain/tryorama": "^0.3.2-dev.3",
 		"esm": "^3.2.25",
 		"json3": "*",
-		"node-fetch": "^2.6.0",
+		"node-fetch": "^2.6.1",
 		"sleep": "^6.1.0",
 		"tape": "^5.0.0",
 		"tape-async": "^2.3.0"
