@@ -1,6 +1,8 @@
 # Table of contents
 
 * [Welcome to Protocol.Love](README.md)
-* [Actions](untitled.md)
-* [Untitled](untitled-1.md)
+
+## Docs
+
+* [Actions](docs/untitled-1.md)
 
