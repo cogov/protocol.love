@@ -1,4 +1,5 @@
 # Table of contents
 
-* [Initial page](README.md)
+* [Welcome to Protocol.Love](README.md)
+* [Actions](untitled.md)
 

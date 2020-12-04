@@ -1,8 +1,8 @@
-# Welcome to Protocol.Love
+# Actions
 
-{% api-method method="get" host="https://api.cakes.com" path="/v1/cakes/:id" %}
+{% api-method method="get" host="https://{HolochainClientUrl}" path="/protocol.love/AddCollectiveUser/:id" %}
 {% api-method-summary %}
-Get Cakes
+AddCollectiveUser
 {% endapi-method-summary %}
 
 {% api-method-description %}
