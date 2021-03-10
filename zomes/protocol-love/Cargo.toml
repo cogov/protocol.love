@@ -18,5 +18,5 @@ serde_json = { version = "=1.0.47", features = ["preserve_order"] }
 serde_derive = "=1.0.104"
 
 [lib]
-path = "src/lib.rs"
+path = "src/index.rs"
 crate-type = ["cdylib"]

@@ -1,0 +1,6 @@
+---
+manifest_version: "1"
+name: protocol.love
+uuid: bb60b248-5ab3-4646-bc87-31fc716b05ed
+properties: ~
+zomes: []
