@@ -1,9 +1,9 @@
 #!/bin/sh
-DEV_DIR_DEFAULT=~/work/cogov/cogov-rust
-DEV_DIR="${DEV_DIR:-$DEV_DIR_DEFAULT}"
+DIR_DEFAULT=~/work/cogov/protocol.love
+DIR="${DIR:-$DIR_DEFAULT}"
 
-cd $DEV_DIR
-tmux rename-window cogov-rust
+cd $DIR
+tmux rename-window protocol.love
 tmux split-window -h $SHELL
 tmux send-keys 'nix-shell https://holochain.love' C-m
 tmux split-window -v $SHELL
