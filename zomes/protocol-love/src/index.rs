@@ -1,7 +1,6 @@
 // see https://developer.holochain.org/api/0.0.38-alpha14/hdk/ for info on using the hdk library
-#![feature(proc_macro_hygiene)]
 #[macro_use]
-extern crate hdk;
+extern crate hdk3;
 extern crate hdk_proc_macros;
 extern crate serde;
 #[macro_use]

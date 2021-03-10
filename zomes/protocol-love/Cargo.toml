@@ -1,22 +1,19 @@
 [package]
 name = "protocol-love"
 version = "0.1.0"
-authors = ["hc-scaffold-framework"]
+authors = ["brian.takita@gmail.com"]
 edition = "2018"
 
 [dependencies]
-futures-io = "=0.3.4"
-hdk = "=0.0.47-alpha1"
-hdk_proc_macros = "=0.0.47-alpha1"
-holochain_json_derive = "=0.0.30"
-holochain_persistence_api = "=0.0.18"
-holochain_wasm_utils = "=0.0.47-alpha1"
-lazy_static = "=1.4.0"
-log = "=0.4.8"
+hdk3 = { git = "https://github.com/holochain/holochain.git", rev = "b77e4ae59a4d20a34e453ac0b878986173896838" }
 serde = "=1.0.104"
-serde_json = { version = "=1.0.47", features = ["preserve_order"] }
+chrono = { version = "0.4", features = ['alloc', 'std']}
+derive_more = "0.99.9"
+thiserror = "1.0.20"
+log = "=0.4.8"
+serde_json = { version = "=1.0.64", features = ["preserve_order"] }
 serde_derive = "=1.0.104"
 
 [lib]
 path = "src/index.rs"
-crate-type = ["cdylib"]
+crate-type = [ "cdylib", "rlib" ]
