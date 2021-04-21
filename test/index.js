@@ -24,11 +24,11 @@ async function main() {
 		await alice.spawn({})
 		const { carol } = await s.players({ carol: main_config }, true)
 		await s.consistency()
-		const { person_address, person } = await assert_create_person(alice, t)
-		await assert_get_person(alice, t, { person_address, person })
+		const { person_hash, person } = await assert_create_person(alice, t)
+		await assert_get_person(alice, t, { person_hash, person })
 		const { collective_address, collective } =
 			await assert_create_collective(alice, t, {
-				admin_address: person_address,
+				admin_hash: person_hash,
 			})
 		await assert_get_collective_people(alice, t, {
 			collective_address,
@@ -46,7 +46,7 @@ async function main() {
 					actions: [
 						_create_collective_action(collective),
 						_set_collective_name_action(collective.name, null),
-						_add_collective_person_action(person_address),
+						_add_collective_person_action(person_hash),
 					]
 				}
 			})
@@ -72,7 +72,7 @@ async function main() {
 					actions: [
 						_create_collective_action(collective),
 						_set_collective_name_action(collective.name, null),
-						_add_collective_person_action(person_address),
+						_add_collective_person_action(person_hash),
 						_set_collective_name_action(collective__renamed.name, collective.name),
 					]
 				}
@@ -96,21 +96,21 @@ async function assert_create_person(player, t) {
 	if (!Ok) {
 		t.fail(JSON.stringify(create_person_result))
 	}
-	const { person_address, person } = Ok
-	t.assert(person_address, 'person_address should be truthy')
-	const { agent_address } = person
-	t.assert(agent_address)
+	const { person_hash, person } = Ok
+	t.assert(person_hash, 'person_hash should be truthy')
+	const { agent_pubkey } = person
+	t.assert(agent_pubkey)
 	t.deepEqual(person, {
-		agent_address,
+		agent_pubkey,
 		name: 'Jane',
 		status: 'Active',
 	})
 	return {
-		person_address,
+		person_hash,
 		person,
 	}
 }
-async function assert_get_person(player, t, { person_address, person }, opts = {}) {
+async function assert_get_person(player, t, { person_hash, person }, opts = {}) {
 	const { timeout_ms } = opts
 	if (timeout_ms != null) {
 		await wait_for(
@@ -121,23 +121,23 @@ async function assert_get_person(player, t, { person_address, person }, opts = {
 	return do_assert_get_person(t.deepEqual)
 	async function do_assert_get_person(deepEqual) {
 		const get_person_result =
-			await player_call(player, 'get_person', { person_address })
+			await player_call(player, 'get_person', { person_hash })
 		const { Ok } = get_person_result
 		if (!Ok) {
 			t.fail(JSON.stringify(get_person_result))
 		}
 		return deepEqual(Ok, {
-			person_address,
+			person_hash,
 			person,
 		})
 	}
 }
-async function assert_create_collective(player, t, { admin_address }) {
+async function assert_create_collective(player, t, { admin_hash }) {
 	const create_collective_result =
 		await player_call(player,
 			'create_collective', {
 				collective: {
-					admin_address,
+					admin_hash,
 					name: 'Flower of Life Collective',
 				}
 			}
@@ -150,7 +150,7 @@ async function assert_create_collective(player, t, { admin_address }) {
 	t.assert(collective_address, 'collective_address should be truthy')
 	t.deepEqual(collective, {
 		name: 'Flower of Life Collective',
-		admin_address,
+		admin_hash,
 	})
 	return {
 		collective_address,
@@ -255,11 +255,11 @@ function _set_collective_name_action(name, prev_name) {
 		strategy: 'SystemAutomatic'
 	}
 }
-function _add_collective_person_action(person_address) {
+function _add_collective_person_action(person_hash) {
 	return {
 		op: 'AddCollectivePerson',
 		status: 'Executed',
-		data: JSON.stringify({ person_address }),
+		data: JSON.stringify({ person_hash }),
 		prev_data: JSON.stringify(null),
 		tag: 'add_collective_person',
 		strategy: 'SystemAutomatic'

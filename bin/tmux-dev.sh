@@ -5,7 +5,7 @@ DIR="${DIR:-$DIR_DEFAULT}"
 cd $DIR
 tmux rename-window protocol.love
 tmux split-window -h $SHELL
-tmux send-keys 'nix-shell https://holochain.love' C-m
+tmux send-keys 'nix-shell' C-m
 tmux split-window -v $SHELL
 tmux send-keys 'tig' C-m
 tmux select-pane -t 0

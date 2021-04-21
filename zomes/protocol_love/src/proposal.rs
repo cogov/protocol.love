@@ -3,14 +3,14 @@ use hdk::holochain_json_api::{
 	error::JsonError,
 };
 use hdk::holochain_core_types::dna::entry_types::Sharing;
-use holochain_wasm_utils::holochain_persistence_api::cas::content::Address;
+use holochain_wasm_utils::holochain_persistence_api::cas::content::EntryHash;
 use holochain_wasm_utils::holochain_core_types::entry::Entry;
 use std::borrow::Borrow;
-use hdk::error::ZomeApiResult;
+use hdk::error::ExternResult;
 use hdk::prelude::ValidatingEntryType;
 
 /// Api params for [create_proposal](fn.create_proposal.html).
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializeBytes, Debug)]
 pub struct ProposalParams {
 	/// Name of the proposal.
 	pub name: String,
@@ -19,7 +19,7 @@ pub struct ProposalParams {
 }
 
 /// A proposal to change the collective.
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializeBytes, Debug)]
 pub struct Proposal {
 	/// Name of the proposal
 	pub name: String,
@@ -38,9 +38,9 @@ impl Default for Proposal {
 
 /// Api payload for a [Proposal](struct.Proposal.html)
 /// returned by [create_proposal](fn.create_proposal.html).
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Clone, Serialize, Deserialize, SerializeBytes, Debug)]
 pub struct ProposalPayload {
-	pub proposal_address: Address,
+	pub proposal_address: EntryHash,
 	pub proposal: Proposal,
 }
 
@@ -60,7 +60,7 @@ pub fn proposal_def() -> ValidatingEntryType {
 }
 
 /// Api to create & commit a [Proposal](struct.Proposal.html).
-pub fn create_proposal(proposal_params: ProposalParams) -> ZomeApiResult<ProposalPayload> {
+pub fn create_proposal(proposal_params: ProposalParams) -> ExternResult<ProposalPayload> {
 	let (proposal_address, _proposal_entry, proposal2) =
 		commit_proposal(Proposal {
 			name: proposal_params.name,
@@ -72,7 +72,7 @@ pub fn create_proposal(proposal_params: ProposalParams) -> ZomeApiResult<Proposa
 	})
 }
 
-fn commit_proposal(proposal: Proposal) -> ZomeApiResult<(Address, Entry, Proposal)> {
+fn commit_proposal(proposal: Proposal) -> ExternResult<(EntryHash, Entry, Proposal)> {
 	let proposal_entry = Entry::App("proposal".into(), proposal.borrow().into());
 	let proposal_address = hdk::commit_entry(&proposal_entry)?;
 	Ok((proposal_address, proposal_entry, proposal))
