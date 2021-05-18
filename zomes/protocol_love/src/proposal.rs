@@ -10,7 +10,7 @@ use hdk::error::ExternResult;
 use hdk::prelude::ValidatingEntryType;
 
 /// Api params for [create_proposal](fn.create_proposal.html).
-#[derive(Clone, Serialize, Deserialize, SerializeBytes, Debug)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct ProposalParams {
 	/// Name of the proposal.
 	pub name: String,
@@ -19,7 +19,7 @@ pub struct ProposalParams {
 }
 
 /// A proposal to change the collective.
-#[derive(Clone, Serialize, Deserialize, SerializeBytes, Debug)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct Proposal {
 	/// Name of the proposal
 	pub name: String,
@@ -38,7 +38,7 @@ impl Default for Proposal {
 
 /// Api payload for a [Proposal](struct.Proposal.html)
 /// returned by [create_proposal](fn.create_proposal.html).
-#[derive(Clone, Serialize, Deserialize, SerializeBytes, Debug)]
+#[derive(Clone, Serialize, Deserialize, SerializedBytes, Debug)]
 pub struct ProposalPayload {
 	pub proposal_address: EntryHash,
 	pub proposal: Proposal,

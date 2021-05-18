@@ -5,11 +5,12 @@ authors = ["brian.takita@gmail.com"]
 edition = "2018"
 
 [lib]
-path = "src/index.rs"
+path = "src/lib.rs"
 crate-type = [ "cdylib", "rlib" ]
 
 [dependencies]
-hdk = {  git = "https://github.com/holochain/holochain.git", rev = "78e2591449f1467f32b24219b4ffac75b6b840ee" }
+hdk = {  git = "https://github.com/holochain/holochain.git", branch = "develop" }
+hc_utils = {git = "https://github.com/holochain/hc-utils", branch = "develop", package = "hc_utils"}
 serde = "=1.0.123"
 thiserror = "1.0.20"
 #chrono = { version = "0.4", features = ['alloc', 'std']}
