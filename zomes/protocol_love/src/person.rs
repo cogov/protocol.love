@@ -1,8 +1,5 @@
 use std::prelude::v1::Into;
 use hdk::prelude::*;
-fn _person_path() -> Path {
-  Path::from("person")
-}
 /// Api params with name, optional agent_pub_key, & optional status.
 ///
 /// Convertable into [PersonParams](struct.PersonParams.html).
@@ -29,6 +26,9 @@ pub fn create_person(person_params: PersonParams) -> ExternResult<PersonPayload>
     }
     Err(err) => Err(err)
   }
+}
+fn _person_path() -> Path {
+  Path::from("person")
 }
 /// Api function to get a [Person](struct.Person.html).
 #[hdk_extern]
