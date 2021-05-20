@@ -5,17 +5,11 @@ authors = ["brian.takita@gmail.com"]
 edition = "2018"
 
 [lib]
+name = "protocol_love"
 path = "src/lib.rs"
 crate-type = [ "cdylib", "rlib" ]
 
 [dependencies]
 hdk = {  git = "https://github.com/holochain/holochain.git", branch = "develop" }
-hc_utils = {git = "https://github.com/holochain/hc-utils", branch = "develop", package = "hc_utils"}
+fixt = {  git = "https://github.com/holochain/holochain.git", branch = "develop" }
 serde = "=1.0.123"
-thiserror = "1.0.20"
-#chrono = { version = "0.4", features = ['alloc', 'std']}
-#derive_more = "0.99.9"
-#thiserror = "1.0.20"
-#log = "=0.4.8"
-#serde_json = { version = "=1.0.64", features = ["preserve_order"] }
-#serde_derive = "=1.0.104"

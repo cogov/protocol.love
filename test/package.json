@@ -1,12 +1,22 @@
 {
-	"dependencies": {
-		"@ctx-core/object": "^8.0.8",
-		"@holochain/tryorama": "^0.3.2-dev.3",
-		"esm": "^3.2.25",
-		"json3": "*",
-		"node-fetch": "^2.6.0",
-		"sleep": "^6.1.0",
-		"tape": "^5.0.0",
-		"tape-async": "^2.3.0"
-	}
+  "name": "@cogov/protocol_love_test",
+  "scripts": {
+    "test": "./bin/test.sh",
+    "test:tryorama": "./bin/test_tryorama.sh",
+    "test:setup": "./bin/test_setup.sh",
+    "test:tryorama:debug": "./bin/test_tryorama_debug.sh"
+  },
+  "devDependencies": {
+    "@ctx-core/object": "^17.6.2",
+    "@holochain/tryorama": "^0.4.3",
+    "deep-equal": "^2.0.5",
+    "esm": "^3.2.25",
+    "json3": "*",
+    "node-fetch": "^2.6.1",
+    "sleep": "^6.3.0",
+    "tape": "^5.2.2",
+    "tape-async": "^2.3.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
+  }
 }

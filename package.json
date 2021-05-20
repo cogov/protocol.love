@@ -1,0 +1,15 @@
+{
+  "name": "@cogov/protocol_love_dev",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {},
+  "workspaces": {
+    "packages": [
+      "test"
+    ]
+  },
+  "devDependencies": {
+    "@ctx-core/monorepo": "^15.1.2",
+    "@ctx-core/pnpm-tools": "^6.1.2"
+  }
+}

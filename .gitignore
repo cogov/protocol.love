@@ -10,3 +10,7 @@ conductor-config.toml
 .cargo
 tmp
 package.lock
+*.dna
+.hc*
+*.happ
+*.log
