@@ -1,10 +1,11 @@
-import { join } from 'path'
 require = require('esm')(module)
-import { Config, InstallAgentsHapps } from '@holochain/tryorama'
+import { join } from 'path'
 import deepEqual from 'deep-equal'
+import { Cell, Config, InstallAgentsHapps, Orchestrator } from '@holochain/tryorama'
 import { clone } from '@ctx-core/object'
+import { _buffer_base64 } from '@ctx-core/buffer'
 import { timeout_opts_I } from '../common'
-export function create_collective_get_collective_test(orchestrator) {
+export function create_collective_get_collective_test(orchestrator:Orchestrator<any>) {
   const config = Config.gen()
   orchestrator.registerScenario('create_collective; get_collective', async (s, t)=>{
     const dna = join(__dirname, '../../protocol.love.dna')
@@ -17,15 +18,16 @@ export function create_collective_get_collective_test(orchestrator) {
     const [[alice_happ]] = await alice_player.installAgentsHapps(installation)
     const [[bob_happ]] = await bob_player.installAgentsHapps(installation)
     await s.shareAllNodes([me_player, alice_player, bob_player])
+    /*
 
     const me = me_happ.cells[0]
     const alice = alice_happ.cells[0]
     const bob = bob_happ.cells[0]
     const me_pubkey = me.cellId[1]
     const alice_pubkey = alice.cellId[1]
-    const alice_pubkey_base64 = alice_pubkey.toString('base64')
+    const alice_pubkey_base64 = _buffer_base64(alice_pubkey)
     const bob_pubkey = bob.cellId[1]
-    const bob_pubkey_base64 = bob_pubkey.toString('base64')
+    const bob_pubkey_base64 = _buffer_base64(bob_pubkey)
 
     const { person_entry_hash, person } = await assert_create_person(alice, t)
     await assert_get_person(alice, t, { person_entry_hash, person })
@@ -80,12 +82,13 @@ export function create_collective_get_collective_test(orchestrator) {
           ]
         }
       })
+    /**/
   })
 }
 async function player_call(player, name:string, params) {
   return player.call('protocol-love', 'protocol-love', name, params)
 }
-async function assert_create_person(player, t) {
+async function assert_create_person(player:Cell, t) {
   const create_person_result =
     await player_call(player, 'create_person', {
         person: {

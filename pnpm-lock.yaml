@@ -12,6 +12,7 @@ importers:
 
   test:
     specifiers:
+      '@ctx-core/buffer': ^1.0.1
       '@ctx-core/object': ^17.6.2
       '@holochain/tryorama': ^0.4.3
       deep-equal: ^2.0.5
@@ -24,6 +25,7 @@ importers:
       ts-node: ^9.1.1
       typescript: ^4.2.4
     devDependencies:
+      '@ctx-core/buffer': 1.0.1
       '@ctx-core/object': 17.6.2
       '@holochain/tryorama': 0.4.3
       deep-equal: 2.0.5
@@ -61,6 +63,12 @@ packages:
       '@ctx-core/set': 9.1.2
     dev: true
 
+  /@ctx-core/buffer/1.0.1:
+    resolution: {integrity: sha512-Du7SfdD3JXzN5wG29IPfFenlU58ev0OGaVvqwEl+T7yTmaRTAnTjviEE6+36G0uSP7hi71APKaD6a6D85DYyjA==}
+    dependencies:
+      '@ctx-core/dom': 8.3.2
+    dev: true
+
   /@ctx-core/cli-args/7.3.2:
     resolution: {integrity: sha512-LybUv70FzrrQLcZGklQ9NSJORrx79r7132fRGxo+yFi3OYO+ijRJrWPk1MdgHTms0BibbvIikeJ1rK7zZRrZhQ==}
     dependencies:
@@ -80,8 +88,32 @@ packages:
       '@ctx-core/array': 20.3.2
     dev: true
 
+  /@ctx-core/data/4.1.2:
+    resolution: {integrity: sha512-fZPhOvlVPsGRsCLsBOq/G+rbNwnNFIG5FNAoOcHavnnbSny/Qz98S3sNQTY7WVZslXQ7fb+MatiwTyoZL57OAw==}
+    dependencies:
+      '@ctx-core/array': 20.3.2
+      '@ctx-core/combinators': 6.1.2
+      '@ctx-core/function': 17.9.2
+    dev: true
+
+  /@ctx-core/dom/8.3.2:
+    resolution: {integrity: sha512-JLHGJji5PMrFgz45G7+wttTgrzFMlgrJH8N0C9wB95eKrs6ymkAIWIqducQnWExyjEm/bsD8Uamuv6XCBb9rZQ==}
+    dependencies:
+      '@ctx-core/data': 4.1.2
+      '@ctx-core/function': 17.9.2
+      '@ctx-core/html': 8.1.2
+      '@ctx-core/object': 17.6.2
+      '@ctx-core/store': 24.8.2
+    dev: true
+
   /@ctx-core/function/17.9.2:
     resolution: {integrity: sha512-EGAigGrTIWTV1WyfLOP6mpkiBfwsvJMZe6imwJdEBxeJHv/OSgNNN2O5qpm6sDZCz8j9IJrryzy6wjQCCbAl4A==}
+    dev: true
+
+  /@ctx-core/html/8.1.2:
+    resolution: {integrity: sha512-stj/OwNmUZJ4o1B1JLviu6/hNQrn0pjH2yycYS5yoiSioh2fUjsEcECD9AUmCVOOvuquz8EBjeiBIe3HBEhktA==}
+    dependencies:
+      '@ctx-core/object': 17.6.2
     dev: true
 
   /@ctx-core/monorepo/15.1.2:
@@ -131,6 +163,16 @@ packages:
     resolution: {integrity: sha512-vwCHoP9di3Cn0XPZlceSN3/k0rnBDjpjHppxUFM+449lTY9mADuAl/iT53FnFea+bWcGo2fJaEWWNxrCsLFewg==}
     dependencies:
       '@ctx-core/function': 17.9.2
+    dev: true
+
+  /@ctx-core/store/24.8.2:
+    resolution: {integrity: sha512-oHkshM3qAOLtVoRgTv2ZVhTdIFPgAFybmI6zMOD5xLMnNEeTaNcQRJ0tnf+7rkHHkDI07UzY4yRTrFsQ4BcWaA==}
+    dependencies:
+      '@ctx-core/array': 20.3.2
+      '@ctx-core/combinators': 6.1.2
+      '@ctx-core/function': 17.9.2
+      '@ctx-core/object': 17.6.2
+      svelte: 3.38.2
     dev: true
 
   /@dabh/diagnostics/2.0.2:
@@ -1461,6 +1503,11 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       has-flag: 4.0.0
+    dev: true
+
+  /svelte/3.38.2:
+    resolution: {integrity: sha512-q5Dq0/QHh4BLJyEVWGe7Cej5NWs040LWjMbicBGZ+3qpFWJ1YObRmUDZKbbovddLC9WW7THTj3kYbTOFmU9fbg==}
+    engines: {node: '>= 8'}
     dev: true
 
   /tape-async/2.3.0:
